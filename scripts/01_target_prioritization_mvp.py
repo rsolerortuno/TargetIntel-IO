@@ -5,7 +5,8 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.append(str(PROJECT_ROOT / "src"))
 
 from opentargets import search_disease, get_associated_targets
-from scoring import add_initial_target_score
+from io_relevance import annotate_io_relevance
+from scoring import add_io_weighted_target_score
 
 
 def main():
@@ -21,12 +22,13 @@ def main():
     print("\nGetting associated targets...")
     targets = get_associated_targets(disease_id=disease_id, size=100)
 
-    ranked_targets = add_initial_target_score(targets)
+    targets = annotate_io_relevance(targets)
+    ranked_targets = add_io_weighted_target_score(targets)
 
     results_dir = PROJECT_ROOT / "results"
     results_dir.mkdir(exist_ok=True)
 
-    output_file = results_dir / "top_targets_melanoma_opentargets_v0_1.csv"
+    output_file = results_dir / "top_targets_melanoma_io_weighted_v0_2.csv"
     ranked_targets.to_csv(output_file, index=False)
 
     print("\nTop 20 targets:")
@@ -37,6 +39,8 @@ def main():
                 "target_name",
                 "disease_name",
                 "opentargets_score",
+                "immuno_oncology_score",
+                "io_category",
                 "final_score",
             ]
         ].head(20)
