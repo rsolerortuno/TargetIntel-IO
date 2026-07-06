@@ -6,10 +6,11 @@ This module combines:
 2. Curated anti-PD-1 resistance-axis ontology annotations
 3. Stable rule-based translational role classification
 4. Modality-aware target reasoning
+5. Evidence-for / evidence-against auditing
 
 The resulting table is the first TargetIntel-IO feature table used by
-downstream evidence auditing, confidence scoring, intent-aware ranking,
-benchmarking, and dashboard outputs.
+downstream confidence scoring, intent-aware ranking, benchmarking, target cards,
+and dashboard outputs.
 """
 
 from __future__ import annotations
@@ -18,6 +19,7 @@ from pathlib import Path
 
 import pandas as pd
 
+from targetintel.evidence_auditor import audit_evidence_dataframe
 from targetintel.modality import annotate_modality_dataframe
 from targetintel.opentargets import get_melanoma_associated_targets
 from targetintel.resistance_ontology import annotate_dataframe
@@ -51,7 +53,7 @@ def build_feature_table(
     pandas.DataFrame
         Feature table containing Open Targets association features,
         resistance-axis ontology annotations, stable role-classifier outputs,
-        and modality-fit annotations.
+        modality-fit annotations, and evidence-for/evidence-against auditing.
     """
     opentargets_df = get_melanoma_associated_targets(
         page_size=page_size,
@@ -79,6 +81,8 @@ def build_feature_table(
         resistance_axis_column="resistance_axis",
     )
 
+    feature_df = audit_evidence_dataframe(feature_df)
+
     feature_df = add_initial_translational_features(feature_df)
 
     return feature_df
@@ -88,14 +92,15 @@ def add_initial_translational_features(df: pd.DataFrame) -> pd.DataFrame:
     """
     Add simple first-pass translational features.
 
-    These features are intentionally conservative. More detailed evidence
-    auditing, confidence scoring, novelty/crowding assessment, and
-    intent-aware ranking will be implemented in separate modules.
+    These features are intentionally conservative. More detailed confidence
+    scoring, novelty/crowding assessment, intent-aware ranking, hypothesis cards,
+    and benchmarking will be implemented in separate modules.
 
     Important:
     - role_classification and therapeutic_direction come from role_classifier.py
     - modality-fit columns come from modality.py
-    - this function must not overwrite those classifier outputs
+    - evidence-for / evidence-against columns come from evidence_auditor.py
+    - this function must not overwrite those outputs
     """
     df = df.copy()
 
@@ -120,13 +125,15 @@ def _make_initial_priority_note(row: pd.Series) -> str:
     score = row.get("opentargets_score", None)
     role = row.get("role_classification", "unclear / low-confidence candidate")
     best_modality = row.get("best_modality", "unclear")
+    main_limitation = row.get("main_limitation", "not assessed")
 
     if row.get("resistance_axis") == "unmapped":
         return (
             f"{symbol} is associated with melanoma in Open Targets but is not "
             "currently mapped to a curated anti-PD-1 resistance axis. "
             f"Stable TargetIntel-IO role: {role}. "
-            f"Best current modality interpretation: {best_modality}."
+            f"Best current modality interpretation: {best_modality}. "
+            f"Main limitation: {main_limitation}."
         )
 
     if pd.notna(score):
@@ -134,13 +141,15 @@ def _make_initial_priority_note(row: pd.Series) -> str:
             f"{symbol} is associated with melanoma in Open Targets "
             f"(score={score:.3f}), maps to the curated resistance program "
             f"'{axis}', is classified as '{role}', and has best current "
-            f"modality interpretation: {best_modality}."
+            f"modality interpretation: {best_modality}. "
+            f"Main limitation: {main_limitation}."
         )
 
     return (
         f"{symbol} maps to the curated resistance program '{axis}', "
         f"is classified as '{role}', and has best current modality "
-        f"interpretation: {best_modality}."
+        f"interpretation: {best_modality}. "
+        f"Main limitation: {main_limitation}."
     )
 
 
@@ -184,6 +193,13 @@ def reorder_feature_table_columns(df: pd.DataFrame) -> pd.DataFrame:
         "poor_direct_target_flag",
         "best_modality",
         "modality_rationale",
+
+        # Evidence-for / evidence-against auditor
+        "evidence_for",
+        "evidence_against",
+        "contradiction_score",
+        "main_limitation",
+        "deprioritization_reason",
 
         # First-pass utility fields
         "has_resistance_axis_match",
