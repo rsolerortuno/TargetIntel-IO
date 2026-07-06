@@ -1,10 +1,13 @@
 """
 Feature table construction for TargetIntel-IO.
 
-This module combines the Open Targets melanoma association table with the
-curated anti-PD-1 resistance ontology. The resulting table is the first
-TargetIntel-IO feature table used by downstream role classification,
-modality reasoning, scoring, and benchmarking.
+This module combines:
+1. Open Targets melanoma target-disease association evidence
+2. Curated anti-PD-1 resistance-axis ontology annotations
+3. Stable rule-based translational role classification
+
+The resulting table is the first TargetIntel-IO feature table used by
+downstream modality reasoning, scoring, benchmarking, and dashboard outputs.
 """
 
 from __future__ import annotations
@@ -15,6 +18,7 @@ import pandas as pd
 
 from targetintel.opentargets import get_melanoma_associated_targets
 from targetintel.resistance_ontology import annotate_dataframe
+from targetintel.role_classifier import classify_dataframe
 
 
 DEFAULT_FEATURE_TABLE_PATH = Path(
@@ -42,8 +46,8 @@ def build_feature_table(
     Returns
     -------
     pandas.DataFrame
-        Feature table containing Open Targets association features plus
-        resistance-axis ontology annotations.
+        Feature table containing Open Targets association features,
+        resistance-axis ontology annotations, and stable role-classifier outputs.
     """
     opentargets_df = get_melanoma_associated_targets(
         page_size=page_size,
@@ -56,6 +60,13 @@ def build_feature_table(
         gene_column="target_symbol",
     )
 
+    feature_df = classify_dataframe(
+        feature_df,
+        gene_column="target_symbol",
+        resistance_axis_column="resistance_axis",
+        expected_role_column="expected_role_from_axis",
+    )
+
     feature_df = add_initial_translational_features(feature_df)
 
     return feature_df
@@ -65,14 +76,16 @@ def add_initial_translational_features(df: pd.DataFrame) -> pd.DataFrame:
     """
     Add simple first-pass translational features.
 
-    These are intentionally conservative placeholders. More detailed role
-    classification, modality reasoning, evidence auditing, and confidence
-    scoring will be implemented in separate modules.
+    These features are intentionally conservative. More detailed modality
+    reasoning, evidence auditing, confidence scoring, and intent-aware ranking
+    will be implemented in separate modules.
+
+    Important:
+    role_classification and therapeutic_direction now come from
+    targetintel.role_classifier.classify_dataframe().
+    They should not be overwritten here.
     """
     df = df.copy()
-
-    df["role_classification"] = df["expected_role_from_axis"]
-    df["therapeutic_direction"] = df["therapeutic_direction_from_axis"]
 
     df["has_resistance_axis_match"] = df["resistance_axis"].ne("unmapped")
 
@@ -80,6 +93,8 @@ def add_initial_translational_features(df: pd.DataFrame) -> pd.DataFrame:
         _make_initial_priority_note,
         axis=1,
     )
+
+    df = reorder_feature_table_columns(df)
 
     return df
 
@@ -91,17 +106,71 @@ def _make_initial_priority_note(row: pd.Series) -> str:
     symbol = row.get("target_symbol", "unknown")
     axis = row.get("matched_resistance_programs", "")
     score = row.get("opentargets_score", None)
+    role = row.get("role_classification", "unclear / low-confidence candidate")
 
     if row.get("resistance_axis") == "unmapped":
         return (
             f"{symbol} is associated with melanoma in Open Targets but is not "
-            "currently mapped to a curated anti-PD-1 resistance axis."
+            "currently mapped to a curated anti-PD-1 resistance axis. "
+            f"Stable TargetIntel-IO role: {role}."
+        )
+
+    if pd.notna(score):
+        return (
+            f"{symbol} is associated with melanoma in Open Targets "
+            f"(score={score:.3f}), maps to the curated resistance program "
+            f"'{axis}', and is classified as: {role}."
         )
 
     return (
-        f"{symbol} is associated with melanoma in Open Targets "
-        f"(score={score:.3f}) and maps to the curated resistance program: {axis}."
+        f"{symbol} maps to the curated resistance program '{axis}' "
+        f"and is classified as: {role}."
     )
+
+
+def reorder_feature_table_columns(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Reorder columns so the most interpretable TargetIntel-IO fields appear first.
+    """
+    preferred_columns = [
+        "target_symbol",
+        "target_name",
+        "target_id",
+        "biotype",
+        "disease_id",
+        "disease_name",
+        "opentargets_score",
+        "resistance_axis",
+        "matched_resistance_programs",
+        "matched_signature_genes",
+        "resistance_axis_score",
+        "resistance_axis_confidence",
+        "expected_role_from_axis",
+        "role_classification",
+        "role_confidence",
+        "role_rationale",
+        "therapeutic_direction",
+        "directionality_confidence",
+        "directionality_rationale",
+        "therapeutic_direction_from_axis",
+        "preferred_modalities_from_axis",
+        "has_resistance_axis_match",
+        "axis_evidence_for",
+        "axis_evidence_against",
+        "initial_priority_note",
+        "datatype_scores",
+        "datasource_scores",
+    ]
+
+    existing_preferred_columns = [
+        column for column in preferred_columns if column in df.columns
+    ]
+
+    remaining_columns = [
+        column for column in df.columns if column not in existing_preferred_columns
+    ]
+
+    return df[existing_preferred_columns + remaining_columns]
 
 
 def save_feature_table(
@@ -110,6 +179,18 @@ def save_feature_table(
 ) -> Path:
     """
     Save the TargetIntel-IO feature table to CSV.
+
+    Parameters
+    ----------
+    df:
+        Feature table to save.
+    output_path:
+        Output CSV path.
+
+    Returns
+    -------
+    pathlib.Path
+        Path where the table was saved.
     """
     output_path = Path(output_path)
     output_path.parent.mkdir(parents=True, exist_ok=True)
