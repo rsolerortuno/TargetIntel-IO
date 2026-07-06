@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "targetintel-io"
+version = "0.1.0"
+description = "Explainable therapeutic-intent-aware target triage for anti-PD-1-resistant melanoma"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [
+    { name = "Rafael Soler Ortuño" }
+]
+dependencies = [
+    "pandas",
+    "requests",
+    "PyYAML"
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["targetintel*"]
