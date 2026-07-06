@@ -1,10 +1,248 @@
-checkpoint_redundancy
-antigen_presentation_loss
-ifng_resistance
-myeloid_suppression
-metabolic_immune_suppression
-tgfb_caf_exclusion
-melanoma_plasticity
-tumor_intrinsic_driver
-immune_cold_state
-treg_suppression
+# Anti-PD-1 resistance ontology for TargetIntel-IO
+# Each resistance axis contains curated seed genes and translational interpretation rules.
+# This file is intentionally rule-based and transparent.
+
+checkpoint_redundancy:
+  label: "Checkpoint redundancy"
+  description: "Compensatory immune checkpoint pathways associated with T-cell exhaustion and incomplete response to PD-1 blockade."
+  example_genes:
+    - PDCD1
+    - CD274
+    - CTLA4
+    - LAG3
+    - TIGIT
+    - HAVCR2
+  expected_role: "anti-PD-1 combination target"
+  therapeutic_direction: "block / inhibit"
+  preferred_modalities:
+    - antibody
+    - bispecific antibody
+    - IO-combination target
+  evidence_for:
+    - "Immune checkpoint biology"
+    - "Potential compensatory inhibitory pathway after PD-1 blockade"
+    - "Surface-accessible immune receptor or ligand"
+  evidence_against:
+    - "Crowded IO target space"
+    - "Expression may reflect exhausted immune-cell abundance rather than causal resistance in all tumors"
+    - "Patient selection may be required"
+
+antigen_presentation_loss:
+  label: "Antigen-presentation loss"
+  description: "Loss or impairment of antigen presentation that can reduce T-cell recognition and contribute to resistance to immune checkpoint blockade."
+  example_genes:
+    - B2M
+    - HLA-A
+    - HLA-B
+    - HLA-C
+    - TAP1
+    - TAP2
+  expected_role: "resistance biomarker / mechanistic resistance marker"
+  therapeutic_direction: "use as biomarker only / restore pathway"
+  preferred_modalities:
+    - biomarker
+    - patient stratification
+  evidence_for:
+    - "Directly linked to tumor immune escape"
+    - "Relevant to T-cell recognition"
+    - "Useful for resistance stratification"
+  evidence_against:
+    - "Often not a direct therapeutic target"
+    - "Loss-of-function events may be difficult to pharmacologically reverse"
+    - "Poor fit for antibody targeting"
+
+ifng_resistance:
+  label: "IFN-gamma pathway resistance"
+  description: "Defects in IFN-gamma signaling that can impair immune-mediated tumor control and contribute to anti-PD-1 resistance."
+  example_genes:
+    - JAK1
+    - JAK2
+    - IFNGR1
+    - IFNGR2
+    - STAT1
+    - IRF1
+  expected_role: "resistance biomarker / mechanistic resistance marker"
+  therapeutic_direction: "use as biomarker / patient stratification"
+  preferred_modalities:
+    - biomarker
+    - patient stratification
+  evidence_for:
+    - "Mechanistically linked to immune resistance"
+    - "Relevant to interferon-response competence"
+    - "Useful for identifying tumors with impaired immune responsiveness"
+  evidence_against:
+    - "Not usually a direct IO-combination antibody target"
+    - "Loss-of-function resistance mechanisms may be hard to target directly"
+    - "May indicate resistance rather than therapeutic vulnerability"
+
+myeloid_suppression:
+  label: "Myeloid suppression"
+  description: "Suppressive myeloid and macrophage-associated programs that may limit anti-tumor T-cell activity and contribute to resistance."
+  example_genes:
+    - CSF1R
+    - TREM2
+    - MARCO
+    - LILRB1
+    - LILRB2
+    - LILRB3
+    - MERTK
+    - CD163
+  expected_role: "myeloid/TME anti-PD-1 combination target"
+  therapeutic_direction: "block / deplete / reprogram suppressive myeloid cells"
+  preferred_modalities:
+    - antibody
+    - IO-combination target
+    - myeloid reprogramming
+  evidence_for:
+    - "Relevant to suppressive tumor microenvironment biology"
+    - "Potential combination rationale with PD-1 blockade"
+    - "Several targets are surface-accessible myeloid receptors"
+  evidence_against:
+    - "Myeloid biology is context-dependent"
+    - "Broad myeloid targeting may create safety or tolerability concerns"
+    - "Expression may mark suppressive abundance rather than causal dependency"
+
+metabolic_immune_suppression:
+  label: "Metabolic immune suppression"
+  description: "Metabolic pathways that suppress anti-tumor immunity, including adenosine and amino-acid metabolism."
+  example_genes:
+    - NT5E
+    - ENTPD1
+    - IDO1
+    - ARG1
+  expected_role: "metabolic immune-suppression target"
+  therapeutic_direction: "block / inhibit"
+  preferred_modalities:
+    - antibody
+    - small molecule
+    - IO-combination target
+  evidence_for:
+    - "Can suppress T-cell function through metabolic mechanisms"
+    - "Plausible combination rationale with immune checkpoint blockade"
+    - "Some targets have therapeutic tractability"
+  evidence_against:
+    - "Clinical translation has been mixed for some metabolic IO targets"
+    - "Pathway redundancy may reduce single-target efficacy"
+    - "Patient selection may be required"
+
+tgfb_caf_exclusion:
+  label: "TGF-beta / CAF-driven immune exclusion"
+  description: "Stromal and TGF-beta-associated programs linked to immune exclusion and poor T-cell infiltration."
+  example_genes:
+    - TGFB1
+    - TGFBR1
+    - TGFBR2
+    - CXCL12
+    - CXCR4
+    - FAP
+  expected_role: "immune-exclusion / stromal-resistance candidate"
+  therapeutic_direction: "block / reprogram tumor microenvironment"
+  preferred_modalities:
+    - antibody
+    - small molecule
+    - IO-combination target
+    - patient stratification
+  evidence_for:
+    - "Relevant to immune exclusion and stromal resistance"
+    - "Potential combination rationale with anti-PD-1 therapy"
+    - "May identify tumors with poor T-cell infiltration"
+  evidence_against:
+    - "TGF-beta biology is pleiotropic and safety-sensitive"
+    - "CAF biology is heterogeneous"
+    - "Targeting stromal programs may require careful patient selection"
+
+melanoma_plasticity:
+  label: "Melanoma plasticity / dedifferentiation"
+  description: "Tumor-cell plasticity, dedifferentiation, and invasive-state programs associated with therapy resistance and immune evasion."
+  example_genes:
+    - AXL
+    - WNT5A
+    - TWIST2
+    - NGFR
+  expected_role: "tumor plasticity / resistance-associated candidate"
+  therapeutic_direction: "block / inhibit / use as biomarker"
+  preferred_modalities:
+    - biomarker
+    - small molecule
+    - patient stratification
+  evidence_for:
+    - "Linked to resistant melanoma cell states"
+    - "May identify dedifferentiated or invasive tumor phenotypes"
+    - "Can support patient stratification or tumor-intrinsic intervention"
+  evidence_against:
+    - "Plasticity markers may be state markers rather than direct dependencies"
+    - "Context-dependent relationship with immune resistance"
+    - "Some candidates may be difficult to target directly"
+
+tumor_intrinsic_driver:
+  label: "Tumor-intrinsic driver biology"
+  description: "Melanoma oncogenic drivers and tumor-cell intrinsic pathway alterations relevant to targeted therapy or resistance biology."
+  example_genes:
+    - BRAF
+    - NRAS
+    - MAP2K1
+    - PTEN
+    - CDKN2A
+    - NF1
+  expected_role: "tumor-intrinsic driver"
+  therapeutic_direction: "small-molecule inhibition / pathway targeting / avoid as antibody target when intracellular"
+  preferred_modalities:
+    - small molecule
+    - biomarker
+    - patient stratification
+  evidence_for:
+    - "Relevant to melanoma tumor-cell biology"
+    - "Some targets or pathways are clinically actionable"
+    - "Useful for separating tumor-intrinsic drivers from immune-combination targets"
+  evidence_against:
+    - "Many tumor-intrinsic drivers are poor antibody targets"
+    - "Tumor suppressors are often poor direct therapeutic targets"
+    - "Melanoma association does not automatically imply anti-PD-1 combination suitability"
+
+immune_cold_state:
+  label: "Immune-cold tumor state"
+  description: "Markers or programs associated with low immune infiltration, poor T-cell activity, or reduced baseline immune responsiveness."
+  example_genes:
+    - CXCL9
+    - CXCL10
+    - GZMB
+    - PRF1
+    - CD8A
+    - CD8B
+  expected_role: "immune-context marker / patient-stratification biomarker"
+  therapeutic_direction: "use as biomarker / patient stratification"
+  preferred_modalities:
+    - biomarker
+    - patient stratification
+  evidence_for:
+    - "Useful for interpreting tumor immune context"
+    - "May help distinguish inflamed from immune-cold tumors"
+    - "Relevant to anti-PD-1 response probability"
+  evidence_against:
+    - "Often reflects immune-cell abundance rather than a direct target"
+    - "Poor direct therapeutic target class"
+    - "May need cohort-level expression context"
+
+treg_suppression:
+  label: "Treg-mediated suppression"
+  description: "Regulatory T-cell-associated suppressive programs that may reduce anti-tumor immune activity."
+  example_genes:
+    - FOXP3
+    - IL2RA
+    - CTLA4
+    - IKZF2
+    - TNFRSF18
+  expected_role: "immune-suppression marker / possible IO-combination target"
+  therapeutic_direction: "deplete / block / use as biomarker"
+  preferred_modalities:
+    - antibody
+    - biomarker
+    - IO-combination target
+  evidence_for:
+    - "Relevant to immune suppression in the tumor microenvironment"
+    - "May support patient stratification or Treg-targeting hypotheses"
+    - "Some targets are surface-accessible"
+  evidence_against:
+    - "Treg targeting can affect normal immune tolerance"
+    - "Some markers are lineage markers rather than safe therapeutic targets"
+    - "Requires careful distinction between biomarker and causal target"
