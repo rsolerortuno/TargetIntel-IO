@@ -60,9 +60,9 @@ def add_intent_ranks(
     """
     Add rank columns for each therapeutic-intent score.
 
-    For each profile:
-    - {profile_id}_final_score is ranked descending
-    - rank 1 means highest priority in that therapeutic intent
+    Ranking is deterministic and uses Open Targets score as a secondary
+    tie-breaker. This avoids many zero-score candidates sharing the same
+    apparently high rank.
     """
     df = df.copy()
 
@@ -72,6 +72,7 @@ def add_intent_ranks(
     for profile_id in profile_ids:
         score_column = f"{profile_id}_final_score"
         rank_column = f"{profile_id}_rank"
+        priority_column = f"{profile_id}_priority"
 
         if score_column not in df.columns:
             raise KeyError(
@@ -79,14 +80,42 @@ def add_intent_ranks(
                 "Run score_all_profiles() before add_intent_ranks()."
             )
 
-        df[rank_column] = (
-            df[score_column]
-            .rank(method="min", ascending=False)
-            .astype(int)
+        sorted_index = (
+            df.sort_values(
+                by=[score_column, "opentargets_score"],
+                ascending=[False, False],
+            )
+            .index
         )
+
+        df[rank_column] = pd.NA
+        df.loc[sorted_index, rank_column] = range(1, len(df) + 1)
+        df[rank_column] = df[rank_column].astype(int)
+
+        df[priority_column] = df[score_column].apply(assign_priority_label)
 
     return df
 
+def assign_priority_label(score: float) -> str:
+    """
+    Convert final score into a qualitative priority label.
+
+    This label is useful for dashboards and prevents low/zero-score genes
+    from being interpreted as meaningful top candidates.
+    """
+    if pd.isna(score):
+        return "not prioritized"
+
+    score = float(score)
+
+    if score >= 0.70:
+        return "high"
+    if score >= 0.45:
+        return "medium"
+    if score > 0.10:
+        return "low"
+
+    return "not prioritized"
 
 def add_rank_shift_vs_opentargets(
     df: pd.DataFrame,
@@ -185,14 +214,17 @@ def reorder_ranking_columns(df: pd.DataFrame) -> pd.DataFrame:
 
         "antibody_io_final_score",
         "antibody_io_rank",
+        "antibody_io_priority",
         "antibody_io_rank_shift_vs_opentargets",
 
         "biomarker_final_score",
         "biomarker_rank",
+        "biomarker_priority",
         "biomarker_rank_shift_vs_opentargets",
 
         "small_molecule_final_score",
         "small_molecule_rank",
+        "small_molecule_priority",
         "small_molecule_rank_shift_vs_opentargets",
 
         "evidence_for",
