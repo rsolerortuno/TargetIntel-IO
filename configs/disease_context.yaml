@@ -1,0 +1,52 @@
+project:
+  name: TargetIntel-IO
+  version: "0.1"
+  description: "Explainable therapeutic-intent-aware target triage for anti-PD-1-resistant melanoma"
+
+disease_context:
+  disease_name: "anti-PD-1-resistant melanoma"
+  parent_disease: "melanoma"
+  therapeutic_context: "immune checkpoint blockade resistance"
+  primary_therapy_context:
+    - anti-PD-1
+    - immune checkpoint blockade
+    - immunotherapy resistance
+
+therapeutic_intents:
+  - id: antibody_io_combination
+    label: "Antibody / IO-combination targeting"
+    description: "Prioritize surface-accessible immune checkpoints, myeloid/TME targets, suppressive immune axes, and antibody-compatible anti-PD-1 combination candidates."
+
+  - id: resistance_biomarker
+    label: "Resistance biomarker discovery"
+    description: "Prioritize genes and pathways that mark antigen-presentation loss, IFN-gamma resistance, immune exclusion, immune-cold states, and patient-stratification potential."
+
+  - id: tumor_intrinsic_small_molecule
+    label: "Tumor-intrinsic / small-molecule intervention"
+    description: "Prioritize tumor-cell drivers, oncogenic signaling pathways, kinases, and small-molecule-compatible tumor-intrinsic resistance mechanisms."
+
+scope:
+  included:
+    - public disease-association evidence
+    - anti-PD-1 resistance biology
+    - target tractability
+    - therapeutic modality fit
+    - translational role classification
+    - therapeutic-intent-aware ranking
+    - evidence-for and evidence-against reasoning
+    - confidence and uncertainty assessment
+
+  excluded_from_mvp:
+    - clinical prediction
+    - de novo target discovery claims
+    - black-box AI scoring
+    - virtual perturbation deep learning
+    - spatial transformer models
+    - complex graph neural networks
+    - LLM-based target scoring
+
+outputs:
+  main_feature_table: "data/processed/targetintel_feature_table.csv"
+  ranked_targets: "results/ranked_targets.csv"
+  target_cards: "results/target_cards/"
+  benchmark_report: "results/benchmark_report.csv"
