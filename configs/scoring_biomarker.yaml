@@ -20,9 +20,9 @@ role_scores:
   melanoma plasticity / resistance-associated marker: 0.70
   immune-exclusion / stromal-resistance candidate: 0.65
   Treg-suppression marker / possible IO-combination target: 0.55
-  anti-PD-1 combination target: 0.45
-  myeloid/TME anti-PD-1 combination target: 0.45
-  metabolic immune-suppression target: 0.45
+  anti-PD-1 combination target: 0.30
+  myeloid/TME anti-PD-1 combination target: 0.35
+  metabolic immune-suppression target: 0.35
   tumor-intrinsic driver / small-molecule target: 0.35
   tumor-intrinsic driver / poor direct therapeutic target: 0.40
   unclear / low-confidence candidate: 0.00
@@ -69,3 +69,10 @@ confidence_scores:
 penalties:
   high_contradiction_score: -0.15
   unmapped_resistance_axis: -0.20
+
+intent_mismatch_penalties:
+  tumor-intrinsic driver / small-molecule target: -0.15
+  anti-PD-1 combination target: -0.10
+  myeloid/TME anti-PD-1 combination target: -0.10
+  tumor-intrinsic driver / poor direct therapeutic target: -0.10
+  unclear / low-confidence candidate: -0.20

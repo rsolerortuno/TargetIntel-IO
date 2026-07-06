@@ -20,11 +20,11 @@ role_scores:
   metabolic immune-suppression target: 0.50
   myeloid/TME anti-PD-1 combination target: 0.35
   anti-PD-1 combination target: 0.20
-  antigen-presentation resistance biomarker: 0.20
-  IFN-gamma resistance mechanism / biomarker: 0.20
-  immune-context marker: 0.10
-  Treg-suppression marker / possible IO-combination target: 0.15
-  tumor-intrinsic driver / poor direct therapeutic target: 0.15
+  antigen-presentation resistance biomarker: 0.02
+  IFN-gamma resistance mechanism / biomarker: 0.02
+  immune-context marker: 0.05
+  Treg-suppression marker / possible IO-combination target: 0.05
+  tumor-intrinsic driver / poor direct therapeutic target: 0.05
   unclear / low-confidence candidate: 0.00
 
 modality_scores:
@@ -45,20 +45,20 @@ modality_scores:
     unclear: 0.10
 
   biomarker_fit:
-    high: 0.50
-    medium-high: 0.45
-    medium: 0.35
-    low-medium: 0.20
-    low: 0.10
-    unclear: 0.10
+    high: 0.15
+    medium-high: 0.15
+    medium: 0.10
+    low-medium: 0.05
+    low: 0.05
+    unclear: 0.05
 
   io_combination_fit:
-    high: 0.30
-    medium-high: 0.30
-    medium: 0.25
-    low-medium: 0.20
-    low: 0.10
-    unclear: 0.10
+    high: 0.10
+    medium-high: 0.10
+    medium: 0.10
+    low-medium: 0.05
+    low: 0.05
+    unclear: 0.05
 
 confidence_scores:
   high confidence: 1.00
@@ -70,3 +70,13 @@ penalties:
   poor_direct_target_flag: -0.25
   high_contradiction_score: -0.20
   unmapped_resistance_axis: -0.05
+
+intent_mismatch_penalties:
+  anti-PD-1 combination target: -0.30
+  myeloid/TME anti-PD-1 combination target: -0.25
+  Treg-suppression marker / possible IO-combination target: -0.25
+  antigen-presentation resistance biomarker: -0.30
+  IFN-gamma resistance mechanism / biomarker: -0.30
+  immune-context marker: -0.25
+  tumor-intrinsic driver / poor direct therapeutic target: -0.25
+  unclear / low-confidence candidate: -0.20

@@ -19,12 +19,12 @@ role_scores:
   immune-exclusion / stromal-resistance candidate: 0.70
   Treg-suppression marker / possible IO-combination target: 0.65
   melanoma plasticity / resistance-associated marker: 0.45
-  tumor-intrinsic driver / small-molecule target: 0.25
-  tumor-intrinsic driver / biomarker: 0.25
-  antigen-presentation resistance biomarker: 0.20
-  IFN-gamma resistance mechanism / biomarker: 0.20
-  tumor-intrinsic driver / poor direct therapeutic target: 0.05
-  immune-context marker: 0.10
+  tumor-intrinsic driver / small-molecule target: 0.05
+  tumor-intrinsic driver / biomarker: 0.05
+  antigen-presentation resistance biomarker: 0.05
+  IFN-gamma resistance mechanism / biomarker: 0.05
+  tumor-intrinsic driver / poor direct therapeutic target: 0.00
+  immune-context marker: 0.05
   unclear / low-confidence candidate: 0.00
 
 modality_scores:
@@ -45,20 +45,20 @@ modality_scores:
     unclear: 0.10
 
   small_molecule_fit:
-    high: 0.20
-    medium-high: 0.25
-    medium: 0.25
-    low-medium: 0.20
-    low: 0.10
-    unclear: 0.10
+    high: 0.05
+    medium-high: 0.05
+    medium: 0.05
+    low-medium: 0.05
+    low: 0.05
+    unclear: 0.05
 
   biomarker_fit:
-    high: 0.40
-    medium-high: 0.45
-    medium: 0.35
-    low-medium: 0.20
-    low: 0.10
-    unclear: 0.10
+    high: 0.20
+    medium-high: 0.25
+    medium: 0.15
+    low-medium: 0.10
+    low: 0.05
+    unclear: 0.05
 
 confidence_scores:
   high confidence: 1.00
@@ -67,6 +67,15 @@ confidence_scores:
   insufficient evidence to classify: 0.00
 
 penalties:
-  poor_direct_target_flag: -0.35
-  high_contradiction_score: -0.20
-  unmapped_resistance_axis: -0.15
+  poor_direct_target_flag: -0.45
+  high_contradiction_score: -0.25
+  unmapped_resistance_axis: -0.20
+
+intent_mismatch_penalties:
+  tumor-intrinsic driver / small-molecule target: -0.25
+  tumor-intrinsic driver / biomarker: -0.20
+  tumor-intrinsic driver / poor direct therapeutic target: -0.40
+  antigen-presentation resistance biomarker: -0.25
+  IFN-gamma resistance mechanism / biomarker: -0.25
+  immune-context marker: -0.25
+  unclear / low-confidence candidate: -0.20
