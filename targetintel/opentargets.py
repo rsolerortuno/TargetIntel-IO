@@ -29,8 +29,8 @@ DEFAULT_CACHE_PATH = Path("data/cache/opentargets_melanoma_targets.json")
 
 
 ASSOCIATED_TARGETS_QUERY = """
-query associatedTargets($mondoId: String!, $index: Int!, $size: Int!) {
-  disease(mondoId: $mondoId) {
+query associatedTargets($efoId: String!, $index: Int!, $size: Int!) {
+  disease(efoId: $efoId) {
     id
     name
     associatedTargets(
@@ -69,24 +69,64 @@ def run_graphql_query(
 ) -> dict[str, Any]:
     """
     Run a GraphQL query against the Open Targets Platform API.
+
+    Raises an informative error containing the HTTP response body when the
+    request or GraphQL query fails.
     """
     response = requests.post(
         url,
-        json={"query": query, "variables": variables},
+        json={
+            "query": query,
+            "variables": variables,
+        },
         timeout=timeout,
     )
 
-    response.raise_for_status()
-    payload = response.json()
+    try:
+        payload = response.json()
+    except ValueError:
+        payload = None
 
-    if "errors" in payload:
-        raise RuntimeError(f"Open Targets GraphQL error: {payload['errors']}")
+    if not response.ok:
+        response_body = (
+            payload
+            if payload is not None
+            else response.text[:5000]
+        )
 
-    return payload["data"]
+        raise RuntimeError(
+            "Open Targets request failed.\n"
+            f"HTTP status: {response.status_code}\n"
+            f"URL: {url}\n"
+            f"Variables: {variables}\n"
+            f"Response: {response_body}"
+        )
+
+    if not isinstance(payload, dict):
+        raise ValueError(
+            "Open Targets returned a non-JSON or invalid JSON response."
+        )
+
+    if payload.get("errors"):
+        raise RuntimeError(
+            "Open Targets GraphQL query failed.\n"
+            f"Variables: {variables}\n"
+            f"Errors: {payload['errors']}"
+        )
+
+    data = payload.get("data")
+
+    if not isinstance(data, dict):
+        raise ValueError(
+            "Open Targets returned no valid GraphQL data object.\n"
+            f"Response: {payload}"
+        )
+
+    return data
 
 
 def fetch_associated_targets_page(
-    mondo_id: str,
+    disease_id: str,
     index: int = 0,
     size: int = 100,
 ) -> dict[str, Any]:
@@ -94,7 +134,7 @@ def fetch_associated_targets_page(
     Fetch one page of disease-associated targets from Open Targets.
     """
     variables = {
-        "mondoId": mondo_id,
+        "efoId": disease_id,
         "index": index,
         "size": size,
     }
@@ -106,7 +146,7 @@ def fetch_associated_targets_page(
 
 
 def fetch_associated_targets(
-    mondo_id: str = DEFAULT_MELANOMA_DISEASE_ID,
+    disease_id: str = DEFAULT_MELANOMA_DISEASE_ID,
     page_size: int = 100,
     max_pages: int = 3,
 ) -> dict[str, Any]:
@@ -115,7 +155,7 @@ def fetch_associated_targets(
 
     Parameters
     ----------
-    mondo_id:
+    disease_id:
         Disease MONDO ID.
     page_size:
         Number of targets per page.
@@ -133,7 +173,7 @@ def fetch_associated_targets(
 
     for page_index in range(max_pages):
         data = fetch_associated_targets_page(
-            mondo_id=mondo_id,
+            disease_id=disease_id,
             index=page_index,
             size=page_size,
         )
@@ -141,7 +181,7 @@ def fetch_associated_targets(
         disease = data.get("disease")
 
         if disease is None:
-            raise ValueError(f"No disease returned for MONDO ID: {mondo_id}")
+            raise ValueError(f"No disease returned for MONDO ID: {disease_id}")
 
         associated_targets = disease["associatedTargets"]
 
@@ -171,7 +211,7 @@ def fetch_associated_targets(
 
 
 def fetch_associated_targets_cached(
-    mondo_id: str = DEFAULT_MELANOMA_DISEASE_ID,
+    disease_id: str = DEFAULT_MELANOMA_DISEASE_ID,
     page_size: int = 100,
     max_pages: int = 3,
     cache_path: str | Path = DEFAULT_CACHE_PATH,
@@ -183,14 +223,14 @@ def fetch_associated_targets_cached(
     return get_or_fetch_json(
         cache_path=cache_path,
         fetch_fn=lambda: fetch_associated_targets(
-            mondo_id=mondo_id,
+            disease_id=disease_id,
             page_size=page_size,
             max_pages=max_pages,
         ),
         refresh=refresh,
         source="Open Targets Platform GraphQL API",
         metadata={
-            "mondo_id": mondo_id,
+            "disease_id": disease_id,
             "page_size": page_size,
             "max_pages": max_pages,
         },
@@ -263,7 +303,7 @@ def get_melanoma_associated_targets(
     Fetch melanoma-associated targets from Open Targets and return a dataframe.
     """
     payload = fetch_associated_targets_cached(
-        mondo_id=DEFAULT_MELANOMA_DISEASE_ID,
+        disease_id=DEFAULT_MELANOMA_DISEASE_ID,
         page_size=page_size,
         max_pages=max_pages,
         refresh=refresh,
