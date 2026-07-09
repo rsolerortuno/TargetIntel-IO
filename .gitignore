@@ -231,3 +231,4 @@ __pycache__/
 
 # Environment
 .env
+.Rhistory

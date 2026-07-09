@@ -887,4 +887,5 @@ A citation file will be added in a future release.
 
 ```text
 TargetIntel-IO: Explainable therapeutic-intent-aware target triage for anti-PD-1-resistant melanoma.
+<<<<<<< Updated upstream
 ```
