@@ -2,6 +2,45 @@
 
 All notable changes to TargetIntel-IO are documented in this file.
 
+## [0.1.1] - 2026-07-09
+
+### Added
+
+- One-weight-at-a-time scoring sensitivity analysis with `-20%` and `+20%`
+  perturbations followed by weight renormalization.
+- Ranking-stability metrics including Spearman correlation, top-k Jaccard
+  similarity, top-k retention, and per-target rank variation.
+- Versioned sensitivity-analysis snapshot with machine-readable outputs,
+  SHA-256 manifest, visualization, and regression tests.
+- Quantitative README limitations grounded in the committed benchmark and
+  sensitivity snapshots.
+- Complete runtime dependency declarations in `pyproject.toml` and
+  `environment.yml`.
+- Exact Python 3.11 dependency lockfile with transitive dependencies and
+  package hashes.
+- CI installation from the locked dependency environment.
+
+### Sensitivity results
+
+Across 42 one-weight-at-a-time perturbation scenarios:
+
+- all therapeutic-intent profiles retained 100% of their baseline top five;
+- worst-case top-10 retention was 90% for antibody/IO, 100% for biomarker,
+  and 90% for small-molecule ranking;
+- worst-case top-20 retention was 100%, 95%, and 100%, respectively;
+- minimum Spearman rank correlation was 0.9852;
+- no tested perturbation changed strict primary-intent accuracy or
+  acceptable-intent accuracy.
+
+### Documentation
+
+- Clarified that only 25 of 56 benchmark targets were retrieved among the
+  top 300 Open Targets melanoma associations.
+- Clarified that 100% stable-role accuracy measures consistency with the
+  implemented curated rules rather than independent biological validation.
+- Documented the scope and limitations of the internal benchmark and local
+  weight-sensitivity analysis.
+
 ## [0.1.0] - 2026-07-09
 
 ### Added
