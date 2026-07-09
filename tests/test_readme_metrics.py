@@ -138,7 +138,7 @@ def test_readme_distinguishes_internal_from_external_validation() -> None:
     required_statements = [
         "implementation consistency, not independent biological accuracy",
         "does not mean that Open Targets independently recovered every target",
-        "not derived from an independent",
+        "internally curated rather than derived from an independent",
         "No external patient-level responder/non-responder cohort",
         "require independent experimental, translational, and clinical validation",
     ]
