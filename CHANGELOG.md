@@ -2,7 +2,7 @@
 
 All notable changes to TargetIntel-IO are documented in this file.
 
-## [Unreleased]
+## [0.1.3] - 2026-07-10
 
 ### Added
 
