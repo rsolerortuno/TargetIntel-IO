@@ -196,7 +196,13 @@ def validate_semantic(
     """Validate deterministic cross-field evidence rules without mutation or I/O."""
     issues: list[ValidationIssue] = []
     computed_or_database = item.extraction_method in {"computed", "database_import"} or item.evidence_type == "database_assertion"
-    literature = _has_text(item.publication_id) or item.validation_status == "citation_verified"
+    # A successful citation-verification status can apply to computed/database
+    # evidence as well.  Those records are verified through computed_support,
+    # so status alone must not classify them as literature evidence.  An
+    # explicit publication ID still preserves the established literature rule.
+    literature = _has_text(item.publication_id) or (
+        item.validation_status == "citation_verified" and not computed_or_database
+    )
 
     if computed_or_database and not _has_text(item.computed_support):
         issues.append(ValidationIssue("computed_support", "must be non-empty for computed or database-derived evidence"))

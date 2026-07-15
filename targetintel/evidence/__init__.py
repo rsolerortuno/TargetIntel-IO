@@ -9,6 +9,9 @@ from .validation import (
     require_semantically_valid,
     validate_semantic,
 )
+from .verifier import CitationVerifier, EvidenceFinalizer, FrozenSourceContent
+from .duplicates import DuplicateDecision, TrueDuplicateDetector
+from .independence import EvidenceIndependenceGrouper, assign_family, independent_family_ids
 
 __all__ = [
     "EvidenceItem",
@@ -23,4 +26,12 @@ __all__ = [
     "ValidationIssue",
     "require_semantically_valid",
     "validate_semantic",
+    "CitationVerifier",
+    "EvidenceFinalizer",
+    "FrozenSourceContent",
+    "DuplicateDecision",
+    "TrueDuplicateDetector",
+    "EvidenceIndependenceGrouper",
+    "assign_family",
+    "independent_family_ids",
 ]
