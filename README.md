@@ -13,9 +13,9 @@ TargetIntel-IO is a reproducible scientific software project for classifying, pr
 | Layer | Status | Purpose |
 |---|---|---|
 | **v0.1.3 deterministic baseline** | Available | Transparent target classification, therapeutic-intent ranking, benchmark evaluation, hypothesis cards, reports, and sensitivity analysis |
-| **v0.2.0 evidence layer** | In development on `main` | Typed evidence contracts, semantic validation, immutable provenance, DuckDB storage, revision history, retrieval auditing, and future grounded literature/LLM integration |
+| **v0.2.0 Common Evidence Layer** | Complete | Typed contracts, validation, immutable provenance, DuckDB/Parquet storage, Europe PMC retrieval, deterministic mock extraction, verification, duplicate/family handling, and post-ranking report decoration |
 
-The production LLM extractor and literature copilot are **not yet implemented**. The current v0.2.0 work establishes the traceable data, validation, and storage substrate required to introduce them safely.
+v0.2.0 is infrastructure and report decoration, not clinical validation or a production literature copilot. The production LLM extractor and autonomous literature copilot remain future work.
 
 ### Implemented in v0.2.0
 
@@ -30,19 +30,15 @@ The production LLM extractor and literature copilot are **not yet implemented**.
 - immutable DuckDB evidence storage;
 - append-only provenance, audit events, and caller-driven revision links;
 - exact-duplicate detection and hash-collision protection;
+- Europe PMC retrieval, deterministic mock extraction, literal quotation
+  verification, evidence-family construction, exact-duplicate handling, and
+  post-ranking Markdown/HTML report cards;
 - independent recording of retrieval success, zero results, failure,
-non-execution, and absent retrieval state;
-- deterministic Parquet snapshot export and verification.
+  non-execution, and absent retrieval state; deterministic Parquet snapshots.
 
-### Next milestones
+### Version roadmap
 
-- deterministic Europe PMC query construction and retrieval;
-- mock extraction from frozen documents;
-- literal quotation and citation verification;
-- evidence-family construction and true-duplicate assessment;
-- evidence cards integrated into the existing reports;
-- provider-agnostic LLM extraction and grounded target-level synthesis;
-- DepMap/CRISPR, single-cell, spatial, and clinical-cohort adapters.
+v0.2.0 Common Evidence Layer; v0.3.0 Grounded Literature Copilot and provider-agnostic LLM integration; v0.4.0 Target feasibility and expanded Open Targets integration; v0.5.0 DepMap/CRISPR functional dependency; v0.6.0 Single-cell and spatial context; v0.7.0 Clinical-response research model; v0.8.0 De novo target discovery and knowledge graph; v1.0.0 Multitumor target-intelligence platform.
 
 See the [TargetIntel-IO 2.0 roadmap](docs/ROADMAP_2_0.md) and the [v0.2.0 evidence-layer specification](docs/specs/v0.2.0_evidence_layer.md).
 
@@ -74,7 +70,7 @@ flowchart TD
     R2 --> REP
     R3 --> REP
 
-    LIT[Scientific literature] -. v0.2 .-> EI[Normalized EvidenceItems]
+    LIT[Scientific literature] -->|v0.2 complete| EI[Normalized EvidenceItems]
     DEP[DepMap / CRISPR] -. roadmap .-> EI
     SC[Single-cell / spatial] -. roadmap .-> EI
     CLIN[Clinical cohorts] -. roadmap .-> EI
@@ -334,7 +330,7 @@ results/              Generated local outputs; not versioned
 
 TargetIntel-IO is a hypothesis-generation and target-triage framework. It does not provide clinical recommendations, validated therapeutic targets, qualified biomarkers, causal biological proof, a diagnostic system, patient-level treatment predictions, or medical advice.
 
-The current deterministic implementation focuses on anti-PD-1-resistant melanoma. The v0.2.0 evidence layer provides infrastructure rather than a completed literature copilot. Production extraction, real LLM-generated scientific interpretations, DepMap integration, single-cell/spatial analysis, patient-response modelling, and knowledge-graph inference remain future work.
+The current deterministic implementation focuses on anti-PD-1-resistant melanoma. v0.2.0 evidence reporting is optional, read-only, and post-ranking; it cannot alter scores, roles, rankings, benchmark results, or sensitivity outputs. Production LLM extraction and autonomous literature copilot behavior, DepMap integration, single-cell/spatial analysis, patient-response modelling, and knowledge-graph inference remain future work.
 
 All generated hypotheses require independent experimental, translational, and clinical validation.
 

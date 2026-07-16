@@ -2,6 +2,20 @@
 
 All notable changes to TargetIntel-IO are documented in this file.
 
+## v0.2.0 — Common Evidence Layer
+
+Issue 208 completed with 183 passing tests; the final release may contain additional tests.
+
+- Added typed immutable evidence contracts, intrinsic and semantic validation, provenance, lineage, and deterministic hashing.
+- Added DuckDB operational storage, deterministic Parquet snapshots, retrieval-attempt auditing, Europe PMC retrieval, deterministic mock extraction, literal quotation verification, and documented computed-evidence support.
+- Added evidence-family construction, exact-duplicate handling, and post-ranking Markdown and HTML evidence cards.
+- Added strict deterministic-isolation regressions and true read-only reporting: report-time reads validate schema without mutations and explicitly supplied unusable stores fail.
+- Added an executable fabricated offline evidence demonstration.
+
+Computed-support verification confirms the presence and structural validity of auditable support metadata; it does not independently reproduce the underlying computation.
+
+v0.2.0 is infrastructure and report decoration, not clinical validation. It does not qualify biomarkers or validate therapeutic targets. Production LLM extraction, DepMap, single-cell/spatial analysis, patient-response modelling, de novo discovery, and multitumor support remain future work.
+
 ## [0.1.3] - 2026-07-10
 
 ### Added

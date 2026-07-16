@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 from dataclasses import replace
+from hashlib import sha256
 from pathlib import Path
 
 import pytest
+import duckdb
 
 from targetintel.evidence.models import ProvenanceStep, RetrievalAttempt
 from targetintel.evidence.store import EvidenceStore, ImmutableEvidenceError, StorageIntegrityError
@@ -191,3 +193,94 @@ def test_absent_retrieval_attempt_is_distinct_from_explicit_not_executed(
         assert store.get_retrieval_attempt("explicit-not-executed") == attempt
         assert store.list_retrieval_attempts(status="not_executed") == [attempt]
         assert store.list_items() == []
+
+
+def test_read_only_store_does_not_mutate_file_and_rejects_writes(tmp_path: Path) -> None:
+    path = tmp_path / "evidence.duckdb"
+    item = finalized()
+    with EvidenceStore(path) as store:
+        store.insert_finalized_item(item)
+        before_tables = store._connection.execute(
+            "SELECT table_name FROM information_schema.tables WHERE table_schema = 'main' ORDER BY table_name"
+        ).fetchall()
+        before_indexes = store._connection.execute("SELECT index_name FROM duckdb_indexes() ORDER BY index_name").fetchall()
+        before_audit = store.audit_events()
+    before = (sha256(path.read_bytes()).hexdigest(), path.stat().st_size, path.stat().st_mtime_ns)
+
+    with EvidenceStore(path, read_only=True) as store:
+        assert store.get_item(item.evidence_id) == item
+        assert store.list_items() == [item]
+        with pytest.raises(StorageIntegrityError, match="read-only"):
+            store.insert_finalized_item(item)
+        with pytest.raises(StorageIntegrityError, match="read-only"):
+            store.record_retrieval_attempt(RetrievalAttempt("new", "MOCK1", "melanoma", None, "mock", "q", UTC, "not_executed", None, None, None))
+        with pytest.raises(StorageIntegrityError, match="read-only"):
+            store.link_revision("one", "two", "reason")
+        with pytest.raises(StorageIntegrityError, match="read-only"):
+            store.export_snapshot(tmp_path / "snapshot")
+    after = (sha256(path.read_bytes()).hexdigest(), path.stat().st_size, path.stat().st_mtime_ns)
+    assert after == before
+    with EvidenceStore(path, read_only=True) as store:
+        assert store.audit_events() == before_audit
+        assert store._connection.execute(
+            "SELECT table_name FROM information_schema.tables WHERE table_schema = 'main' ORDER BY table_name"
+        ).fetchall() == before_tables
+        assert store._connection.execute("SELECT index_name FROM duckdb_indexes() ORDER BY index_name").fetchall() == before_indexes
+
+
+def test_read_only_store_rejects_missing_directory_and_incompatible_paths(tmp_path: Path) -> None:
+    with pytest.raises(FileNotFoundError, match="does not exist"):
+        EvidenceStore(tmp_path / "missing.duckdb", read_only=True)
+    directory = tmp_path / "directory"
+    directory.mkdir()
+    with pytest.raises(IsADirectoryError, match="must be a DuckDB file"):
+        EvidenceStore(directory, read_only=True)
+    malformed = tmp_path / "malformed.duckdb"
+    malformed.write_text("not a DuckDB database", encoding="utf-8")
+    with pytest.raises(StorageIntegrityError, match="cannot open|schema"):
+        EvidenceStore(malformed, read_only=True)
+
+
+@pytest.mark.parametrize(
+    ("name", "make_incompatible", "error"),
+    [
+        (
+            "wrong-schema-version",
+            lambda connection: connection.execute(
+                "UPDATE schema_metadata SET schema_version = ?", ["wrong-version"]
+            ),
+            "incompatible",
+        ),
+        (
+            "missing-schema-metadata",
+            lambda connection: connection.execute("DROP TABLE schema_metadata"),
+            "missing table: schema_metadata",
+        ),
+        (
+            "missing-required-evidence-table",
+            lambda connection: connection.execute("DROP TABLE derived_links"),
+            "missing table: derived_links",
+        ),
+    ],
+)
+def test_read_only_store_rejects_incompatible_duckdb_schema_without_mutation(
+    tmp_path: Path,
+    name: str,
+    make_incompatible: object,
+    error: str,
+) -> None:
+    """Schema checks must reject real DuckDB stores without repairing them."""
+    path = tmp_path / f"{name}.duckdb"
+    with EvidenceStore(path):
+        pass
+    connection = duckdb.connect(str(path))
+    try:
+        make_incompatible(connection)  # type: ignore[operator]
+    finally:
+        connection.close()
+
+    before = (sha256(path.read_bytes()).hexdigest(), path.stat().st_size, path.stat().st_mtime_ns)
+    with pytest.raises(StorageIntegrityError, match=error):
+        EvidenceStore(path, read_only=True)
+    after = (sha256(path.read_bytes()).hexdigest(), path.stat().st_size, path.stat().st_mtime_ns)
+    assert after == before

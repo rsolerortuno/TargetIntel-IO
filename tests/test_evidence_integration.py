@@ -3,6 +3,9 @@
 from __future__ import annotations
 
 from pathlib import Path
+from hashlib import sha256
+
+import pytest
 
 import pandas as pd
 from pandas.testing import assert_frame_equal
@@ -35,7 +38,9 @@ def test_load_evidence_cards_reads_finalized_records_without_mutation(tmp_path: 
         before_verified = store.get_item("verified")
         before_audit = store.get_item("audit-only")
 
+    before_file = (sha256(path.read_bytes()).hexdigest(), path.stat().st_size, path.stat().st_mtime_ns)
     cards = load_evidence_cards(path, ["MOCK1"])
+    assert (sha256(path.read_bytes()).hexdigest(), path.stat().st_size, path.stat().st_mtime_ns) == before_file
 
     assert list(cards) == ["MOCK1"]
     assert [item.evidence_id for item in cards["MOCK1"].items] == ["verified"]
@@ -45,7 +50,12 @@ def test_load_evidence_cards_reads_finalized_records_without_mutation(tmp_path: 
 
 
 def test_missing_store_and_zero_or_failed_retrievals_create_no_evidence_cards(tmp_path: Path) -> None:
-    assert load_evidence_cards(tmp_path / "absent.duckdb", ["MOCK1"]) == {}
+    with pytest.raises(FileNotFoundError, match="does not exist"):
+        load_evidence_cards(tmp_path / "absent.duckdb", ["MOCK1"])
+    directory = tmp_path / "store-directory"
+    directory.mkdir()
+    with pytest.raises(IsADirectoryError, match="DuckDB file"):
+        load_evidence_cards(directory, ["MOCK1"])
 
     path = tmp_path / "evidence.duckdb"
     with EvidenceStore(path) as store:

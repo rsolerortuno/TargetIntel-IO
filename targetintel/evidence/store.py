@@ -69,11 +69,35 @@ class EvidenceStore:
     as a context manager).  No connection is shared globally.
     """
 
-    def __init__(self, path: str | Path, *, clock: Callable[[], datetime] = _utc_now) -> None:
+    def __init__(
+        self,
+        path: str | Path,
+        *,
+        read_only: bool = False,
+        clock: Callable[[], datetime] = _utc_now,
+    ) -> None:
         self.path = Path(path)
+        self.read_only = read_only
         self._clock = clock
-        self._connection = duckdb.connect(str(self.path))
-        self._initialize_schema()
+        if read_only:
+            if not self.path.exists():
+                raise FileNotFoundError(f"evidence store does not exist: {self.path}")
+            if not self.path.is_file():
+                raise IsADirectoryError(f"evidence store path must be a DuckDB file: {self.path}")
+            try:
+                self._connection = duckdb.connect(str(self.path), read_only=True)
+            except duckdb.Error as exc:
+                raise StorageIntegrityError(
+                    f"cannot open evidence store read-only: {self.path}"
+                ) from exc
+            try:
+                self._validate_read_only_schema()
+            except Exception:
+                self.close()
+                raise
+        else:
+            self._connection = duckdb.connect(str(self.path))
+            self._initialize_schema()
 
     def close(self) -> None:
         self._connection.close()
@@ -173,6 +197,48 @@ class EvidenceStore:
         elif existing[0] != CANONICALIZATION_VERSION:
             raise StorageIntegrityError("canonicalization version does not match existing store")
 
+    def _validate_read_only_schema(self) -> None:
+        """Confirm the known store contract without issuing any DDL or DML."""
+        expected_columns = {
+            "evidence_items": set(ITEM_COLUMNS) | {"canonical_json", "item_json"},
+            "retrieval_attempts": set(ATTEMPT_COLUMNS) | {"attempt_json"},
+            "provenance_steps": {"evidence_id", "step_index", "step_name", "timestamp", "metadata_json", "is_operational"},
+            "derived_links": {"child_id", "parent_id"},
+            "evidence_revisions": {"newer_evidence_id", "prior_evidence_id", "reason"},
+            "ingest_audit_events": {"event_id", "timestamp", "event_type", "submitted_hash", "evidence_id", "retrieval_attempt_id", "details_json"},
+            "schema_metadata": {"schema_version", "canonicalization_version", "updated_at"},
+        }
+        try:
+            rows = self._connection.execute(
+                "SELECT table_name, column_name FROM information_schema.columns "
+                "WHERE table_schema = 'main'"
+            ).fetchall()
+            actual: dict[str, set[str]] = {}
+            for table_name, column_name in rows:
+                actual.setdefault(table_name, set()).add(column_name)
+            for table_name, columns in expected_columns.items():
+                if table_name not in actual:
+                    raise StorageIntegrityError(f"evidence store schema is missing table: {table_name}")
+                missing = columns - actual[table_name]
+                if missing:
+                    raise StorageIntegrityError(
+                        f"evidence store schema is missing columns in {table_name}: {', '.join(sorted(missing))}"
+                    )
+            metadata = self._connection.execute(
+                "SELECT schema_version, canonicalization_version FROM schema_metadata"
+            ).fetchall()
+        except duckdb.Error as exc:
+            raise StorageIntegrityError("evidence store schema cannot be read") from exc
+        expected = (SCHEMA_VERSION, CANONICALIZATION_VERSION)
+        if metadata != [expected]:
+            raise StorageIntegrityError(
+                "evidence store schema or canonicalization version is incompatible"
+            )
+
+    def _require_writable(self) -> None:
+        if self.read_only:
+            raise StorageIntegrityError("evidence store is read-only; write operations are not permitted")
+
     def _event_id(self) -> str:
         number = self._connection.execute("SELECT count(*) FROM ingest_audit_events").fetchone()[0] + 1
         return f"audit-{number:020d}"
@@ -180,6 +246,7 @@ class EvidenceStore:
     def _audit(self, event_type: str, *, submitted_hash: str | None = None,
                evidence_id: str | None = None, retrieval_attempt_id: str | None = None,
                details: dict[str, object] | None = None) -> None:
+        self._require_writable()
         self._connection.execute(
             "INSERT INTO ingest_audit_events VALUES (?, ?, ?, ?, ?, ?, ?)",
             [self._event_id(), self._clock(), event_type, submitted_hash, evidence_id,
@@ -203,6 +270,7 @@ class EvidenceStore:
         return [EvidenceItem.from_dict(json.loads(row[0])) for row in rows]
 
     def insert_finalized_item(self, item: EvidenceItem) -> InsertResult:
+        self._require_writable()
         context = self._items_context()
         require_finalizable(item, context)
         calculated_hash = item.calculate_record_hash(context)
@@ -262,6 +330,7 @@ class EvidenceStore:
         return InsertResult(item.evidence_id, True, False)
 
     def _record_collision(self, submitted_hash: str, existing_evidence_id: str) -> None:
+        self._require_writable()
         # The failed canonical transaction is complete before this independent,
         # append-only integrity audit is recorded.
         self._connection.execute("BEGIN")
@@ -273,6 +342,7 @@ class EvidenceStore:
             raise
 
     def link_revision(self, newer_evidence_id: str, prior_evidence_id: str, reason: str) -> None:
+        self._require_writable()
         if not reason.strip():
             raise ValueError("revision reason must be non-empty")
         self._connection.execute("BEGIN")
@@ -290,6 +360,7 @@ class EvidenceStore:
         ).fetchall()]
 
     def record_retrieval_attempt(self, attempt: RetrievalAttempt) -> None:
+        self._require_writable()
         require_valid_retrieval_attempt(attempt)
         values = attempt.to_dict()
         self._connection.execute("BEGIN")
@@ -329,6 +400,7 @@ class EvidenceStore:
         return [{"event_id": row[0], "timestamp": row[1], "event_type": row[2], "submitted_hash": row[3], "evidence_id": row[4], "retrieval_attempt_id": row[5], "details": json.loads(row[6])} for row in rows]
 
     def export_snapshot(self, output_path: str | Path) -> Path:
+        self._require_writable()
         output = Path(output_path)
         if output.exists():
             raise FileExistsError(f"snapshot path already exists: {output}")
