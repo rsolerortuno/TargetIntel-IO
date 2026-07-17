@@ -1,0 +1,12 @@
+{
+  "execution-text-success": {
+    "status": "success",
+    "raw_text": "offline execution fixture",
+    "structured_output": {"result": "fixture"}
+  },
+  "execution-structured-success": {
+    "status": "permanent_failure",
+    "error_category": "permanent_provider_failure",
+    "error_message": "Fixture provider failure"
+  }
+}

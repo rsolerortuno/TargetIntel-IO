@@ -1,0 +1,12 @@
+{
+  "request_id": "execution-text-success",
+  "task_type": "grounded_extraction",
+  "source_document_id": "fixture-document-text",
+  "prompt_id": "fixture-prompt",
+  "prompt_version": "1",
+  "system_instruction": "Return the scripted fixture.",
+  "user_instruction": "Use only the supplied source.",
+  "response_schema_id": "fixture-schema",
+  "response_schema_version": "1",
+  "source_text": "Exact fixture source text.\nSecond line."
+}
