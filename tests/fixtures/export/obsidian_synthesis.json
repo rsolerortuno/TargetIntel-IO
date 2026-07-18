@@ -1,0 +1,8 @@
+{
+  "target": "B2M",
+  "context": "melanoma",
+  "statement": "The reviewed evidence reports no significant difference.",
+  "evidence_item_id": "ev-1",
+  "limitation": "Observations conflict.",
+  "uncertainty": "high_uncertainty"
+}
