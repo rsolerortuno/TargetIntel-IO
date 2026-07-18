@@ -34,4 +34,19 @@ __all__ = [
     "EvidenceIndependenceGrouper",
     "assign_family",
     "independent_family_ids",
+    "EvidencePersistenceRequest",
+    "EvidencePersistenceReceipt",
+    "persist_promoted_evidence",
 ]
+
+
+def __getattr__(name: str):
+    """Expose persistence contracts without disturbing the existing LLM import cycle."""
+    if name in {"EvidencePersistenceRequest", "EvidencePersistenceReceipt"}:
+        from .persistence_models import EvidencePersistenceReceipt, EvidencePersistenceRequest
+        return {"EvidencePersistenceRequest": EvidencePersistenceRequest,
+                "EvidencePersistenceReceipt": EvidencePersistenceReceipt}[name]
+    if name == "persist_promoted_evidence":
+        from .reviewed_persistence import persist_promoted_evidence
+        return persist_promoted_evidence
+    raise AttributeError(name)

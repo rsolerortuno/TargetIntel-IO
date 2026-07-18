@@ -75,10 +75,17 @@ class EvidenceStore:
         *,
         read_only: bool = False,
         clock: Callable[[], datetime] = _utc_now,
+        logical_store_id: str | None = None,
     ) -> None:
         self.path = Path(path)
         self.read_only = read_only
         self._clock = clock
+        if logical_store_id is not None and (not isinstance(logical_store_id, str) or not logical_store_id.strip()):
+            raise ValueError("logical_store_id must be a non-empty string when provided")
+        # This is an operator-supplied logical identity, deliberately distinct
+        # from the local path.  It is optional for existing evidence-layer
+        # callers, but reviewed-evidence persistence requires it explicitly.
+        self.logical_store_id = logical_store_id
         if read_only:
             if not self.path.exists():
                 raise FileNotFoundError(f"evidence store does not exist: {self.path}")
