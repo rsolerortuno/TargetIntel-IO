@@ -37,6 +37,11 @@ __all__ = [
     "EvidencePersistenceRequest",
     "EvidencePersistenceReceipt",
     "persist_promoted_evidence",
+    "EvidenceSnapshotRequest",
+    "EvidenceSnapshotEntry",
+    "ReviewedEvidenceSnapshot",
+    "EvidenceSnapshotResult",
+    "create_reviewed_evidence_snapshot",
 ]
 
 
@@ -49,4 +54,11 @@ def __getattr__(name: str):
     if name == "persist_promoted_evidence":
         from .reviewed_persistence import persist_promoted_evidence
         return persist_promoted_evidence
+    if name in {"EvidenceSnapshotRequest", "EvidenceSnapshotEntry", "ReviewedEvidenceSnapshot", "EvidenceSnapshotResult"}:
+        from .snapshot_models import EvidenceSnapshotEntry, EvidenceSnapshotRequest, EvidenceSnapshotResult, ReviewedEvidenceSnapshot
+        return {"EvidenceSnapshotRequest": EvidenceSnapshotRequest, "EvidenceSnapshotEntry": EvidenceSnapshotEntry,
+                "ReviewedEvidenceSnapshot": ReviewedEvidenceSnapshot, "EvidenceSnapshotResult": EvidenceSnapshotResult}[name]
+    if name == "create_reviewed_evidence_snapshot":
+        from .snapshots import create_reviewed_evidence_snapshot
+        return create_reviewed_evidence_snapshot
     raise AttributeError(name)
