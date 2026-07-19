@@ -1,0 +1,4 @@
+{
+  "description": "Offline Issue 403 feasibility-profile regression fixture inventory.",
+  "cases": ["explicit_resolution", "terminal_resolution", "missing_record"]
+}

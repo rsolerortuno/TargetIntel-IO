@@ -25,6 +25,12 @@ from .validation import (
 )
 from .opentargets_models import OpenTargetsFetchRequest, OpenTargetsFetchResult, OpenTargetsQueryPlan, OpenTargetsCoverageReport, OpenTargetsTargetRecord, OpenTargetsTargetResolution, OpenTargetsTransportResponse
 from .opentargets_ingestion import fetch_opentargets
+from .opentargets_normalization import OpenTargetsNormalizationManifest
+from .profiles import (
+    FeasibilityDimensionCoverage, FeasibilityProfileBatchResult,
+    TargetFeasibilityProfileBuildResult, build_target_feasibility_profile,
+    build_target_feasibility_profiles,
+)
 
 __all__ = [
     "AVAILABILITY_STATES", "FEASIBILITY_DIMENSIONS", "TARGET_IDENTIFIER_TYPES",
@@ -33,4 +39,7 @@ __all__ = [
     "require_valid_observation", "require_valid_profile", "require_valid_request",
     "validate_observation", "validate_profile", "validate_request",
     "OpenTargetsFetchRequest", "OpenTargetsFetchResult", "OpenTargetsQueryPlan", "OpenTargetsCoverageReport", "OpenTargetsTargetRecord", "OpenTargetsTargetResolution", "OpenTargetsTransportResponse", "fetch_opentargets",
+    "OpenTargetsNormalizationManifest", "FeasibilityDimensionCoverage",
+    "TargetFeasibilityProfileBuildResult", "FeasibilityProfileBatchResult",
+    "build_target_feasibility_profile", "build_target_feasibility_profiles",
 ]
