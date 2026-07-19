@@ -18,6 +18,10 @@ import pandas as pd
 
 from targetintel.hypothesis_cards import recommend_next_experiment
 from targetintel.evidence.reporting import EvidenceCard
+from targetintel.feasibility.presentation import (
+    make_feasibility_report_section,
+    render_feasibility_html,
+)
 
 
 DEFAULT_HTML_REPORT_DIR = Path("results/html_reports")
@@ -368,6 +372,8 @@ a:hover {
 def make_target_html_report(
     row: pd.Series,
     evidence_card: EvidenceCard | None = None,
+    feasibility_annotations: tuple[object, ...] | list[object] | None = None,
+    feasibility_target_identifier_type: str | None = None,
 ) -> str:
     """
     Generate one standalone HTML target report.
@@ -385,6 +391,16 @@ def make_target_html_report(
     antibody_priority = _safe_str(row.get("antibody_io_priority"))
     biomarker_priority = _safe_str(row.get("biomarker_priority"))
     small_molecule_priority = _safe_str(row.get("small_molecule_priority"))
+    feasibility_html = ""
+    if feasibility_annotations is not None:
+        if feasibility_target_identifier_type is None:
+            raise ValueError("identifier_type_required_for_feasibility")
+        feasibility_html = render_feasibility_html(make_feasibility_report_section(
+            target_identifier=symbol,
+            target_identifier_type=feasibility_target_identifier_type,
+            annotations=feasibility_annotations,
+        ))
+    feasibility_suffix = f"\n\n{feasibility_html}" if feasibility_html else ""
 
     html = f"""<!doctype html>
 <html lang="en">
@@ -427,7 +443,7 @@ def make_target_html_report(
     </div>
 </section>
 
-{_make_evidence_html(evidence_card)}
+{_make_evidence_html(evidence_card)}{feasibility_suffix}
 
 <section class="card">
     <h2>Stable TargetIntel-IO classification</h2>
@@ -570,6 +586,8 @@ def write_target_html_report(
     row: pd.Series,
     output_dir: str | Path = DEFAULT_HTML_REPORT_DIR,
     evidence_card: EvidenceCard | None = None,
+    feasibility_annotations: tuple[object, ...] | list[object] | None = None,
+    feasibility_target_identifier_type: str | None = None,
 ) -> Path:
     """
     Write one standalone HTML report.
@@ -581,7 +599,11 @@ def write_target_html_report(
     output_path = output_dir / f"{symbol}.html"
 
     output_path.write_text(
-        make_target_html_report(row, evidence_card=evidence_card),
+        make_target_html_report(
+            row, evidence_card=evidence_card,
+            feasibility_annotations=feasibility_annotations,
+            feasibility_target_identifier_type=feasibility_target_identifier_type,
+        ),
         encoding="utf-8",
     )
 
@@ -755,6 +777,8 @@ def write_top_html_reports(
     output_dir: str | Path = DEFAULT_HTML_REPORT_DIR,
     top_n_per_mode: int = 10,
     evidence_cards: Mapping[str, EvidenceCard] | None = None,
+    feasibility_annotations: Mapping[str, tuple[object, ...] | list[object]] | None = None,
+    feasibility_target_identifier_type: str | None = None,
 ) -> list[Path]:
     """
     Write HTML reports for the union of top-N targets across all modes.
@@ -797,10 +821,13 @@ def write_top_html_reports(
     written_paths = []
 
     for _, row in selected_df.iterrows():
+        target_annotations = (feasibility_annotations or {}).get(str(row["target_symbol"]))
         written_paths.append(write_target_html_report(
             row,
             output_dir=output_dir,
             evidence_card=(evidence_cards or {}).get(str(row["target_symbol"])),
+            feasibility_annotations=target_annotations,
+            feasibility_target_identifier_type=feasibility_target_identifier_type,
         ))
 
     index_path = write_html_index(
