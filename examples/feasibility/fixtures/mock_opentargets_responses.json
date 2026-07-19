@@ -1,0 +1,16 @@
+{
+  "source_release": "24.06",
+  "disease_id": "MONDO:0005105",
+  "association_ranked_rows": [
+    {"score": 0.91, "target": {"id": "ENSG00000157764", "approvedSymbol": "BRAF"}},
+    {"score": 0.82, "target": {"id": "ENSG00000120217", "approvedSymbol": "CD274"}}
+  ],
+  "targets": {
+    "TAP1": {"ensembl": "ENSG00000168394", "fields": {"knownDrugs": {"rows": [{"drug": {"id": "CHEMBL:DEMO1", "name": "synthetic precedent"}, "phase": 2, "status": "Active"}]}, "tractability": [{"label": "antibody evidence", "modality": "ANTIBODY", "value": true}, {"label": "ligand conflict", "modality": "SMALL MOLECULE", "value": true}, {"label": "ligand conflict", "modality": "SMALL MOLECULE", "value": false}], "safetyLiabilities": [{"id": "safety:TAP1:1", "event": "synthetic source-linked observation", "effects": ["synthetic effect"]}]}},
+    "IFNGR1": {"ensembl": "ENSG00000027697", "fields": {"tractability": [{"label": "antibody context", "modality": "ANTIBODY", "value": true}]}},
+    "STAT1": {"ensembl": "ENSG00000115415", "fields": {"tractability": [{"label": "small molecule context", "modality": "SMALL MOLECULE", "value": true}], "safetyLiabilities": []}},
+    "NOREC": {"ensembl": "ENSG00000999991", "no_record": true},
+    "UNRES": {"unresolved": true},
+    "FAIL": {"ensembl": "ENSG00000999992", "failure": true}
+  }
+}

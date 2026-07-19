@@ -15,17 +15,18 @@ TargetIntel-IO is a reproducible scientific software project for classifying, pr
 | **v0.1.3 deterministic baseline** | Available | Transparent target classification, therapeutic-intent ranking, benchmark evaluation, hypothesis cards, reports, and sensitivity analysis |
 | **v0.2.0 Common Evidence Layer** | Complete | Typed contracts, validation, immutable provenance, storage, retrieval, and post-ranking report decoration |
 | **v0.3.0 grounded-evidence infrastructure** | Complete | Provider-neutral execution, audited extraction, mandatory review, reviewed snapshots, grounded synthesis, and safe Markdown export |
+| **v0.4.0 target feasibility** | Complete | Offline deterministic feasibility retrieval, normalized profiles, coverage reporting, modality composition, and post-ranking presentation |
 
-v0.2.0 is infrastructure and report decoration, not clinical validation or a production LLM extractor. v0.3.0 remains research infrastructure; its LLM layer does not alter deterministic scores, rankings, or role classification.
+v0.2.0 is infrastructure and report decoration, not clinical validation or a production LLM extractor. v0.3.0 remains research infrastructure and does not alter deterministic scores, rankings, or role classification.
 
-### Implemented in v0.2.0
+v0.4.0 adds a separate, descriptive feasibility layer after deterministic prioritization. It can retrieve an explicit directed target universe independently of association rank and report its coverage, while retaining unresolved, no-record, and failed outcomes. Source-linked profiles retain clinical precedence, modality-specific tractability, doability, safety-data state, missingness, and contradictions. Feasibility does not change scores, roles, ranks, ordering, or selection; missing safety data does not mean safety.
+Run the fully offline deterministic demonstration:
 
-- immutable evidence contracts, validation, provenance, storage, retrieval, and deterministic snapshots;
+```bash
+python examples/feasibility/run_v040_mock_demo.py --output-dir /tmp/targetintel-v040-demo
+```
 
-### Implemented in v0.3.0
-
-- provider-neutral structured execution, grounded claim extraction, deterministic scientific-claim audit, and controlled `EvidenceItem` promotion;
-- mandatory human review, explicit reviewed-evidence persistence, target-level synthesis grounded only in reviewed snapshots, and safe idempotent Obsidian Markdown export.
+See the [feasibility example](examples/feasibility/README.md) and [v0.4.0 release notes](docs/releases/v0.4.0.md).
 
 ### v0.3.0 evidence-to-synthesis boundary
 
