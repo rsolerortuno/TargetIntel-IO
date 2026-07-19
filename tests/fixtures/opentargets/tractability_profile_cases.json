@@ -1,0 +1,4 @@
+{
+  "description": "Offline Issue 403 tractability regression fixture inventory.",
+  "cases": ["supported_modalities", "explicit_protac", "contradictory_small_molecule"]
+}
