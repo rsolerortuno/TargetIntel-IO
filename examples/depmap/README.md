@@ -44,3 +44,10 @@ python examples/depmap/run_dependency_profiles.py \
 It writes a profile manifest, deterministic JSONL profiles, a review TSV,
 coverage summary, and a model-context index. The bundled fixtures are
 synthetic and non-biological.
+
+## Universe freeze
+
+After full-matrix ingestion, freeze the benchmark, pre-DepMap discovery and
+background universes with `run_universe_freeze.py`. It writes only canonical
+universe metadata, overlap and leakage-audit artifacts; it never scores, ranks
+or profiles targets.
