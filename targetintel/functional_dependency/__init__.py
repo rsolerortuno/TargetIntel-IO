@@ -21,6 +21,11 @@ from .depmap_profiles import (
     FunctionalDependencyProfileRun, build_dependency_profiles,
     write_dependency_profile_artifacts,
 )
+from .target_universes import (
+    BenchmarkEntry, DiscoveryUniversePolicy, InclusionSourceRecord,
+    TargetUniverse, TargetUniverseEntry, TargetUniverseFreezeManifest,
+    freeze_universes,
+)
 
 __all__ = [
     "DepMapFileManifest",
@@ -42,4 +47,11 @@ __all__ = [
     "FunctionalDependencyProfileRun",
     "build_dependency_profiles",
     "write_dependency_profile_artifacts",
+    "BenchmarkEntry",
+    "DiscoveryUniversePolicy",
+    "InclusionSourceRecord",
+    "TargetUniverse",
+    "TargetUniverseEntry",
+    "TargetUniverseFreezeManifest",
+    "freeze_universes",
 ]

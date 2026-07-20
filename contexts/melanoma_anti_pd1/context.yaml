@@ -1,0 +1,7 @@
+context_id: melanoma_anti_pd1
+context_version: v1
+status: development
+disease_identity: MONDO:0005105
+canonical_mapping_version: depmap-gene-label-v2
+limitations:
+  - This package is a reproducibility scaffold, not scientific validation.
