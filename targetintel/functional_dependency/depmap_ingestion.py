@@ -308,6 +308,33 @@ def _read_metadata(path: Path, fmt: str) -> tuple[dict[str, dict[str, str]], lis
     return records, list(records)
 
 
+def _read_reference(path: Path, fmt: str, role: str, parser_version: str) -> list[dict[str, Any]]:
+    """Normalize a validated optional gene-reference file for downstream use.
+
+    This is deliberately part of the sole canonical ingestion surface.  It
+    retains source labels and exact parser outcomes; it neither aliases nor
+    resolves reference labels against requested targets.
+    """
+    delimiter = _delimiter(fmt)
+    try:
+        with path.open("r", encoding="utf-8", newline="") as handle:
+            reader = csv.DictReader(handle, delimiter=delimiter)
+            if not reader.fieldnames or "gene_label" not in reader.fieldnames:
+                raise DepMapIngestionError("schema_mismatch", "gene reference must contain gene_label")
+            rows = []
+            for number, row in enumerate(reader, 2):
+                label = row.get("gene_label", "") or ""
+                parsed = parse_gene_label(label, parser_version=parser_version)
+                rows.append({"dataset_role": role, "source_row": number,
+                             "original_source_label": label, **parsed.__dict__,
+                             "canonical_identity": parsed.canonical_identity})
+    except DepMapIngestionError:
+        raise
+    except (OSError, UnicodeError, csv.Error) as error:
+        raise DepMapIngestionError("parse_failure", "gene reference could not be parsed") from error
+    return rows
+
+
 def _resolve_targets(targets: Iterable[DepMapTargetRequest], genes_by_role: Mapping[str, list[dict[str, Any]]]) -> list[dict[str, Any]]:
     all_genes = [gene for genes in genes_by_role.values() for gene in genes]
     seen: set[tuple[str, str]] = set(); result = []
@@ -363,6 +390,7 @@ class DepMapIngestionSnapshot:
     dataset_validation_results: Mapping[str, str]
     model_index_id: str
     gene_index_id: str
+    reference_index_id: str
     target_universe_id: str | None
     target_resolution_coverage: tuple[Mapping[str, Any], ...]
     reconciliation_summary: Mapping[str, Any]
@@ -370,6 +398,7 @@ class DepMapIngestionSnapshot:
     output_artifacts: tuple[str, ...]
     limitations: tuple[str, ...]
     terminal_status: str = "valid"
+    subset_matrix_artifact_ids: Mapping[str, str] | None = None
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "dataset_validation_results", _freeze(self.dataset_validation_results))
@@ -378,16 +407,19 @@ class DepMapIngestionSnapshot:
         object.__setattr__(self, "source_counts", _freeze(self.source_counts))
         object.__setattr__(self, "output_artifacts", tuple(self.output_artifacts))
         object.__setattr__(self, "limitations", tuple(self.limitations))
+        object.__setattr__(self, "subset_matrix_artifact_ids", _freeze(dict(sorted((self.subset_matrix_artifact_ids or {}).items()))))
 
     def identity_payload(self) -> dict[str, Any]:
         return {"snapshot_format_version": self.snapshot_format_version, "request_id": self.request_id,
                 "release_manifest_id": self.release_manifest_id, "ingestion_mode": self.ingestion_mode,
                 "parser_version": self.parser_version, "mapping_version": self.mapping_version,
                 "dataset_validation_results": _thaw(self.dataset_validation_results), "model_index_id": self.model_index_id,
-                "gene_index_id": self.gene_index_id, "target_universe_id": self.target_universe_id,
+                "gene_index_id": self.gene_index_id, "reference_index_id": self.reference_index_id,
+                "target_universe_id": self.target_universe_id,
                 "target_resolution_coverage": _thaw(self.target_resolution_coverage),
                 "reconciliation_summary": _thaw(self.reconciliation_summary), "source_counts": _thaw(self.source_counts),
-                "limitations": list(self.limitations), "terminal_status": self.terminal_status}
+                "limitations": list(self.limitations), "terminal_status": self.terminal_status,
+                "subset_matrix_artifact_ids": _thaw(self.subset_matrix_artifact_ids)}
 
     @property
     def snapshot_id(self) -> str: return _identity("dmis", self.identity_payload())
@@ -417,6 +449,14 @@ def ingest_local_release(request: DepMapIngestionRequest) -> DepMapIngestionSnap
     metadata_item = _file_for(request.release_manifest, "model_metadata")
     if metadata_item is None: raise DepMapIngestionError("missing_required_role", "model metadata is required for ingestion")
     metadata, metadata_order = _read_metadata(request.data_root / metadata_item.relative_filename, metadata_item.file_format)
+    reference_rows = []
+    for role in ("common_essential_reference", "pan_dependency_reference"):
+        item = _file_for(request.release_manifest, role)
+        if item is not None:
+            reference_rows.extend(_read_reference(
+                request.data_root / item.relative_filename, item.file_format, role,
+                request.parser_version,
+            ))
     genes_by_role = {role: value[0] for role, value in matrices.items()}
     resolutions = _resolve_targets(request.target_universe or (), genes_by_role)
     effect_models = matrices["crispr_gene_effect"][1]
@@ -435,9 +475,13 @@ def ingest_local_release(request: DepMapIngestionRequest) -> DepMapIngestionSnap
         record = metadata.get(model, {})
         model_rows.append({"model_identifier": model, "presence_in_gene_effect": model in effect_models, "presence_in_dependency_probability": model in prob_models,
                            "presence_in_metadata": model in metadata, "metadata_mapping_status": "mapped" if model in metadata else "metadata_absent",
-                           "source_provenance": f"metadata_row:{record.get('source_row', '')}" if record else ""})
+                           "source_provenance": f"metadata_row:{record.get('source_row', '')}" if record else "",
+                           # This is the canonical Issue 502 metadata surface for
+                           # downstream context assignment.  It preserves exact
+                           # structured values without requiring a second parser.
+                           "structured_metadata": canonical_json({key: value for key, value in record.items() if key != "source_row"}) if record else ""})
     selected_labels = {r["matched_original_source_label"] for r in resolutions if r["resolution_status"].startswith("resolved_")}
-    artifacts = ["coverage_summary.json", "gene_index.tsv", "ingestion_snapshot.json", "model_index.tsv"]
+    artifacts = ["coverage_summary.json", "gene_index.tsv", "ingestion_snapshot.json", "model_index.tsv", "reference_index.tsv"]
     if request.ingestion_mode == "target_subset": artifacts += ["gene_effect_subset.tsv", "dependency_probability_subset.tsv"]
     source_counts = {role: {"rows": row_count, "columns": width} for role, (_, _, width, row_count) in matrices.items()}
     resolved_labels_by_role = {
@@ -453,13 +497,11 @@ def ingest_local_release(request: DepMapIngestionRequest) -> DepMapIngestionSnap
                 "optional_dataset_role_availability": {role: _file_for(request.release_manifest, role) is not None for role in request.release_manifest.optional_dataset_roles},
                 "limitation": "Coverage records exact file identity matches only; it does not assert biological evidence quality."}
     gene_id = _identity("dmgi", {"rows": gene_rows}); model_id = _identity("dmmi", {"rows": model_rows})
-    snapshot = DepMapIngestionSnapshot(INGESTION_SNAPSHOT_FORMAT_VERSION, request.request_id, request.release_manifest.manifest_id, request.ingestion_mode,
-                                      request.parser_version, request.mapping_version, {item.dataset_role: "valid" for item in request.release_manifest.file_manifests},
-                                      model_id, gene_id, request.target_universe_id, tuple(resolutions), reconciliation, source_counts, tuple(sorted(artifacts)),
-                                      tuple(request.release_manifest.release_limitations) + tuple(request.limitations))
+    reference_id = _identity("dmri", {"rows": reference_rows})
     try:
         _write(request.output_directory / "gene_index.tsv", _tsv(gene_rows, ["dataset_role", "source_column_index", "original_source_label", "parsed_symbol", "parsed_entrez_identifier", "parser_status", "canonical_identity", "limitation"]))
-        _write(request.output_directory / "model_index.tsv", _tsv(model_rows, ["model_identifier", "presence_in_gene_effect", "presence_in_dependency_probability", "presence_in_metadata", "metadata_mapping_status", "source_provenance"]))
+        _write(request.output_directory / "model_index.tsv", _tsv(model_rows, ["model_identifier", "presence_in_gene_effect", "presence_in_dependency_probability", "presence_in_metadata", "metadata_mapping_status", "source_provenance", "structured_metadata"]))
+        _write(request.output_directory / "reference_index.tsv", _tsv(reference_rows, ["dataset_role", "source_row", "original_source_label", "parsed_symbol", "parsed_entrez_identifier", "parser_status", "canonical_identity", "parser_version", "limitation"]))
         _write(request.output_directory / "coverage_summary.json", canonical_json(coverage) + "\n")
         if request.ingestion_mode == "target_subset":
             for role, filename in (("crispr_gene_effect", "gene_effect_subset.tsv"), ("crispr_dependency_probability", "dependency_probability_subset.tsv")):
@@ -471,6 +513,18 @@ def ingest_local_release(request: DepMapIngestionRequest) -> DepMapIngestionSnap
                 assert item is not None
                 _stream_subset(request.data_root / item.relative_filename, item.file_format, matrix[0], selected_labels,
                                request.output_directory / filename)
+        subset_matrix_artifact_ids = {
+            role: sha256((request.output_directory / filename).read_bytes()).hexdigest()
+            for role, filename in (
+                ("crispr_gene_effect", "gene_effect_subset.tsv"),
+                ("crispr_dependency_probability", "dependency_probability_subset.tsv"),
+            )
+        } if request.ingestion_mode == "target_subset" else {}
+        snapshot = DepMapIngestionSnapshot(INGESTION_SNAPSHOT_FORMAT_VERSION, request.request_id, request.release_manifest.manifest_id, request.ingestion_mode,
+                                          request.parser_version, request.mapping_version, {item.dataset_role: "valid" for item in request.release_manifest.file_manifests},
+                                          model_id, gene_id, reference_id, request.target_universe_id, tuple(resolutions), reconciliation, source_counts, tuple(sorted(artifacts)),
+                                          tuple(request.release_manifest.release_limitations) + tuple(request.limitations),
+                                          subset_matrix_artifact_ids=subset_matrix_artifact_ids)
         _write(request.output_directory / "ingestion_snapshot.json", canonical_json(snapshot.to_dict()) + "\n")
     except OSError as error:
         raise DepMapIngestionError("output_failure", "derived artifact could not be written") from error

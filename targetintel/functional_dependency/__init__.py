@@ -15,6 +15,12 @@ from .depmap_ingestion import (
     DepMapIngestionError, DepMapIngestionRequest, DepMapIngestionSnapshot,
     DepMapTargetRequest, ingest_local_release, parse_gene_label,
 )
+from .depmap_profiles import (
+    DepMapModelContextDefinition, DepMapProfileError,
+    FunctionalDependencyProfile, FunctionalDependencyProfilePolicy,
+    FunctionalDependencyProfileRun, build_dependency_profiles,
+    write_dependency_profile_artifacts,
+)
 
 __all__ = [
     "DepMapFileManifest",
@@ -29,4 +35,11 @@ __all__ = [
     "DepMapTargetRequest",
     "ingest_local_release",
     "parse_gene_label",
+    "DepMapModelContextDefinition",
+    "DepMapProfileError",
+    "FunctionalDependencyProfile",
+    "FunctionalDependencyProfilePolicy",
+    "FunctionalDependencyProfileRun",
+    "build_dependency_profiles",
+    "write_dependency_profile_artifacts",
 ]

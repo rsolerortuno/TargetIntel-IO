@@ -26,3 +26,21 @@ python examples/depmap/run_local_ingestion.py \
   --mode full_matrix \
   --output-dir /path/to/derived-output
 ```
+
+## Descriptive dependency profiles
+
+After successful subset ingestion, build a separate, descriptive profile with
+explicit structured context and policy contracts. This path never changes
+target scores or rankings and makes no clinical or therapeutic conclusion.
+
+```bash
+python examples/depmap/run_dependency_profiles.py \
+  --ingestion-dir /tmp/targetintel-depmap-output \
+  --context tests/fixtures/depmap/profiles/melanoma_context.json \
+  --policy tests/fixtures/depmap/profiles/profile_policy.json \
+  --output-dir /tmp/targetintel-depmap-profiles
+```
+
+It writes a profile manifest, deterministic JSONL profiles, a review TSV,
+coverage summary, and a model-context index. The bundled fixtures are
+synthetic and non-biological.
