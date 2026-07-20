@@ -213,7 +213,7 @@ def test_subset_resolution_retains_invalid_duplicate_unresolved_and_ambiguous_re
     statuses = [item["resolution_status"] for item in snapshot.target_resolution_coverage]
     assert statuses == ["invalid_request", "ambiguous", "duplicate_request", "unresolved"]
     subset = (tmp_path / "out" / "gene_effect_subset.tsv").read_text()
-    assert subset == "ModelID\nACH-001\nACH-002\nACH-003\nACH-004\n"
+    assert subset == "ModelID\nACH-001\nACH-002\nACH-003\nACH-004\nACH-005\nACH-006\nACH-007\n"
 
 
 def test_reconciliation_missing_values_and_artifact_bytes_are_deterministic(tmp_path: Path) -> None:
@@ -223,13 +223,13 @@ def test_reconciliation_missing_values_and_artifact_bytes_are_deterministic(tmp_
     second_snapshot = ingest_local_release(request(second))
     assert first_snapshot.snapshot_id == second_snapshot.snapshot_id
     assert first_snapshot.reconciliation_summary == {
-        "models_shared": 3, "models_only_gene_effect": 1,
-        "models_only_dependency_probability": 1, "models_missing_metadata": 1,
+        "models_shared": 6, "models_only_gene_effect": 1,
+        "models_only_dependency_probability": 0, "models_missing_metadata": 1,
         "metadata_models_absent_from_matrices": 0, "genes_shared": 4,
         "genes_only_gene_effect": 1, "genes_only_dependency_probability": 1,
         "malformed_or_ambiguous_gene_columns": 2,
     }
-    for filename in ("ingestion_snapshot.json", "coverage_summary.json", "gene_index.tsv", "model_index.tsv", "gene_effect_subset.tsv", "dependency_probability_subset.tsv"):
+    for filename in ("ingestion_snapshot.json", "coverage_summary.json", "gene_index.tsv", "model_index.tsv", "reference_index.tsv", "gene_effect_subset.tsv", "dependency_probability_subset.tsv"):
         assert (first / "out" / filename).read_bytes() == (second / "out" / filename).read_bytes()
     effect_subset = (first / "out" / "gene_effect_subset.tsv").read_text()
     assert "ACH-001\t-0.5\t" in effect_subset
@@ -240,10 +240,13 @@ def test_reconciliation_missing_values_and_artifact_bytes_are_deterministic(tmp_
     assert coverage["optional_dataset_role_availability"] == {
         "common_essential_reference": True,
         "crispr_dependency_probability": True,
-        "pan_dependency_reference": False,
+        "pan_dependency_reference": True,
     }
     gene_index = (first / "out" / "gene_index.tsv").read_text()
     assert "BAD LABEL\t\t\tmalformed" in gene_index
+    reference_index = (first / "out" / "reference_index.tsv").read_text()
+    assert "common_essential_reference\t2\tBRAF (673)\tBRAF\t673\tparsed" in reference_index
+    assert "pan_dependency_reference\t2\tNRAS (4893)\tNRAS\t4893\tparsed" in reference_index
 
 
 def test_source_escape_is_rejected(tmp_path: Path) -> None:
