@@ -42,7 +42,7 @@ See the [demo guide](examples/llm/README.md) and [v0.3.0 release notes](docs/rel
 
 ### Version roadmap and current release
 
-v0.5.0 is complete as a reproducible DepMap/CRISPR research-preview workflow: 56 benchmark targets, 331 discovery targets, 18,531 background genes, 100% benchmark and holdout coverage, a preserved 300-target baseline, disabled automatic activation, and zero differing scientific artifacts across two independent runs.
+v0.5.0 DepMap/CRISPR functional dependency is complete as a reproducible research-preview workflow: 56 benchmark targets, 331 discovery targets, 18,531 background genes, 100% benchmark and holdout coverage, a preserved 300-target baseline, disabled automatic activation, and zero differing scientific artifacts across two independent runs.
 
 Roadmap: v0.2.0 Common Evidence Layer; v0.3.0 Grounded Literature Copilot and provider-agnostic LLM integration; v0.4.0 Target feasibility and expanded Open Targets integration; v0.6.0 Single-cell and spatial context; v0.7.0 Clinical-response research model; v0.8.0 De novo target discovery and knowledge graph; v1.0.0 Multitumor target-intelligence platform. See the [v0.5.0 release notes](docs/releases/v0.5.0.md) and [repository-safe evidence](docs/releases/evidence/v0.5.0/).
 
