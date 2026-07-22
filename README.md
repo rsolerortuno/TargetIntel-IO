@@ -16,7 +16,7 @@ TargetIntel-IO helps research teams distinguish possible therapeutic targets, bi
 | Target feasibility | Complete | Offline modality-specific feasibility and coverage |
 | Functional dependency | Research preview | DepMap/CRISPR evidence, closure, portable reporting and human review |
 
-The project has progressed through v0.1.3 deterministic therapeutic-intent baseline, v0.2.0 Common Evidence Layer, v0.3.0 grounded evidence and human-review infrastructure, v0.4.0 target feasibility, and v0.5.0 DepMap/CRISPR functional-dependency architecture. v0.5.0 implementation and reporting architecture are complete; real DepMap Public 26Q1 repository snapshot publication is pending Issue 512.
+The project has progressed through v0.1.3 deterministic therapeutic-intent baseline, v0.2.0 Common Evidence Layer, v0.3.0 grounded evidence and human-review infrastructure, v0.4.0 target feasibility, and v0.5.0 DepMap/CRISPR functional-dependency architecture. A sanitized, portable DepMap Public 26Q1 aggregate bundle and versioned research-preview reports are published. The validated closure captures the authoritative antibody/IO baseline score and rank used by the bounded overlay; it does not contain the other two full productive score tables, so reports do not infer them. The former “real DepMap Public 26Q1 repository snapshot publication is pending Issue 512” status is superseded by this publication.
 
 ## Biological problem and framing
 
@@ -90,15 +90,18 @@ The normal deterministic workflow does not require a local DepMap release.
 targetintel run
 targetintel run --validate
 targetintel run --refresh
+targetintel run --depmap-snapshot data/releases/depmap/DepMap_Public_26Q1
 targetintel run --help
 python -m pytest -q
 ```
 
 ## Outputs
 
-The productive workflow writes a deterministic feature table, therapeutic-intent ranked targets, Markdown cards, HTML reports and figures. Optional reviewed evidence, feasibility, and functional-dependency sections decorate matching reports only. Portable aggregate DepMap snapshots are a separate research-preview artifact; real 26Q1 repository publication artifacts are pending Issue 512.
+The productive workflow writes a deterministic feature table, therapeutic-intent ranked targets, Markdown cards, HTML reports and figures. Optional reviewed evidence, feasibility, and functional-dependency sections decorate matching reports only. A portable aggregate DepMap Public 26Q1 snapshot is a separate research-preview artifact and never changes scores, ranks, roles, or activation.
 
 Versioned examples include [HTML reports](examples/html_reports/), [figures](examples/figures/), the [benchmark snapshot](examples/benchmark/README.md), and [sensitivity outputs](examples/sensitivity/README.md).
+
+Single-cell and spatial evidence integration is planned for v0.6.0.
 
 ## Validation and reproducibility
 
@@ -153,7 +156,7 @@ This layer requires mandatory human review and does not alter deterministic scor
 
 ## Scientific limitations
 
-TargetIntel-IO does not make treatment recommendations, validate targets or biomarkers, establish causality, or predict patient response. Missing evidence is not negative evidence. DepMap cell-line profiles do not reproduce the complete tumor microenvironment, and broad dependency can reflect general essentiality. Optional DepMap infrastructure is implemented, while real 26Q1 snapshot publication remains pending Issue 512. Future research directions include single-cell/spatial integration, clinical-response research models, and knowledge-graph expansion.
+TargetIntel-IO does not make treatment recommendations, validate targets or biomarkers, establish causality, or predict patient response. Missing evidence is not negative evidence. DepMap cell-line profiles do not reproduce the complete tumor microenvironment, and broad dependency can reflect general essentiality. The real 26Q1 portable aggregate publication is available under `data/releases/depmap/DepMap_Public_26Q1`, with reports under `examples/html_reports/depmap_26q1` and `examples/target_cards/depmap_26q1`. Future research directions include single-cell/spatial integration, clinical-response research models, and knowledge-graph expansion.
 
 ## Repository map
 

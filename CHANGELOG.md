@@ -2,6 +2,17 @@
 
 All notable changes to TargetIntel-IO are documented in this file.
 
+## v0.5.0 — DepMap Public 26Q1 publication interface
+
+- Added an offline, checksum-validating portable DepMap report-evidence loader.
+- Added the optional `targetintel run --depmap-snapshot` report-decoration path;
+  it does not change productive scores, ranks, roles, or activation.
+- Added a fail-closed publication command and official-source documentation for
+  validated DepMap Public 26Q1 aggregate bundles.
+- Added a DepMap functional-dependency research-preview section to HTML indexes
+  when a portable snapshot is explicitly supplied.
+- Single-cell and spatial evidence integration is planned for v0.6.0.
+
 ## v0.2.0 — Common Evidence Layer
 
 Issue 208 completed with 183 passing tests; the final release may contain additional tests.

@@ -83,6 +83,15 @@ def build_parser() -> argparse.ArgumentParser:
             "decorate reports after deterministic ranking."
         ),
     )
+    run_parser.add_argument(
+        "--depmap-snapshot",
+        type=Path,
+        default=None,
+        help=(
+            "Optional portable DepMap Public 26Q1 publication bundle used "
+            "only to decorate reports after deterministic ranking."
+        ),
+    )
 
     return parser
 
@@ -168,6 +177,8 @@ def main(
     )
     if args.evidence_store is not None:
         pipeline_kwargs["evidence_store_path"] = args.evidence_store
+    if args.depmap_snapshot is not None:
+        pipeline_kwargs["depmap_snapshot_path"] = args.depmap_snapshot
     outputs = run_pipeline(
         **pipeline_kwargs,
     )
