@@ -1,4 +1,21 @@
 # Byte-compiled / optimized / DLL files
+CRISPRGeneEffect*
+CRISPRGeneDependency*
+Model.csv
+ScreenGeneEffect*
+ScreenGeneDependency*
+dependency_profiles.jsonl
+*.parquet
+*.h5
+*.h5ad
+*.rds
+*.loom
+*.mtx
+*.tar
+*.tar.gz
+*.zip
+raw/
+cache/
 __pycache__/
 *.py[codz]
 *$py.class

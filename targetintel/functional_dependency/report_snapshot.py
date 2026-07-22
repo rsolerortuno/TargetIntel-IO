@@ -191,7 +191,18 @@ def export_depmap_report_snapshot(*, run_dir: Path | str, config_dir: Path | str
     _need(compatibility, "compatible", True); _need(compatibility, "expected_context_identity", "melanoma_anti_pd1:v1")
     configuration_id = _one_of((_configuration_id(config), _need(preflight, "configuration_id"), _need(readiness, "configuration_id"), _need(closure, "configuration_id"), reproducibility.get("configuration_id"), closure_summary.get("configuration_id")), "configuration IDs")
     manifest_id = _one_of((_need(preflight, "release_manifest_id"), closure_summary.get("release_manifest_id"), external.get("release_manifest_id")), "release manifest IDs")
-    scientific_identity = _one_of((closure_summary.get("scientific_closure_identity"), external.get("scientific_closure_identity")), "scientific closure identities")
+    # Some validated v0.5.0 closures deliberately omit this operationally
+    # excluded field from their summaries. In that case its reproducibility
+    # invariant is the authoritative frozen identity.
+    closure_identity = closure_summary.get("scientific_closure_identity")
+    external_identity = external.get("scientific_closure_identity")
+    if closure_identity is None or external_identity is None:
+        invariant = reproducibility.get("excluded_artifact_invariants", {}).get("closure_scientific_identity", {})
+        if not isinstance(invariant, Mapping) or invariant.get("first") != invariant.get("second"):
+            _fail("scientific closure identity is missing")
+        scientific_identity = invariant["first"]
+    else:
+        scientific_identity = _one_of((closure_identity, external_identity), "scientific closure identities")
     if not scientific_identity:
         _fail("scientific closure identity is missing")
     _need(reproducibility, "result", "reproducible")

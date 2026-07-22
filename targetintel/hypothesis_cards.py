@@ -316,13 +316,16 @@ def write_target_card(
     symbol = _safe_str(row.get("target_symbol"))
     output_path = output_dir / f"{symbol}.md"
 
+    card_text = make_target_card(
+        row,
+        evidence_card=evidence_card,
+        feasibility_annotations=feasibility_annotations,
+        feasibility_target_identifier_type=feasibility_target_identifier_type,
+        dependency_evidence=dependency_evidence,
+    )
+
     output_path.write_text(
-        make_target_card(
-            row, evidence_card=evidence_card,
-            feasibility_annotations=feasibility_annotations,
-            feasibility_target_identifier_type=feasibility_target_identifier_type,
-            dependency_evidence=dependency_evidence,
-        ),
+        card_text.rstrip("\r\n") + "\n",
         encoding="utf-8",
     )
 

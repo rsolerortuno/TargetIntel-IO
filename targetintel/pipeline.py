@@ -8,7 +8,7 @@ import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Sequence
+from typing import Mapping, Sequence
 
 os.environ.setdefault(
     "MPLBACKEND",
@@ -25,6 +25,9 @@ from targetintel.html_reports import (
 )
 from targetintel.hypothesis_cards import (
     write_top_target_cards,
+)
+from targetintel.functional_dependency.report_loader import (
+    load_dependency_report_evidence_bundle,
 )
 from targetintel.intent_ranking import (
     build_intent_rankings,
@@ -59,6 +62,30 @@ def _validate_positive_integer(
         raise ValueError(
             f"{name} must be greater than zero."
         )
+
+
+def _report_dependency_coverage(
+    dependency_evidence: Mapping[str, object],
+) -> None:
+    """Print the descriptive coverage of an optional portable bundle."""
+    profiles = tuple(dependency_evidence.values())
+    available = sum(
+        bool(getattr(profile, "profile_available", False))
+        for profile in profiles
+    )
+    by_coverage: dict[str, int] = {}
+    for profile in profiles:
+        status = str(getattr(profile, "coverage_status", "unknown"))
+        by_coverage[status] = by_coverage.get(status, 0) + 1
+    coverage_summary = ", ".join(
+        f"{status}={count}"
+        for status, count in sorted(by_coverage.items())
+    )
+    print(
+        "DepMap research-preview coverage: "
+        f"{available}/{len(profiles)} profiles available"
+        + (f" ({coverage_summary})" if coverage_summary else "")
+    )
 
 
 def _run_command(
@@ -98,6 +125,7 @@ def run_core_pipeline(
     refresh: bool = False,
     top_n_per_mode: int = 10,
     evidence_store_path: str | Path | None = None,
+    depmap_snapshot_path: str | Path | None = None,
     project_root: Path = PROJECT_ROOT,
 ) -> PipelineOutputs:
     """
@@ -206,6 +234,15 @@ def run_core_pipeline(
         if evidence_store_path is not None
         else {}
     )
+    dependency_evidence = (
+        load_dependency_report_evidence_bundle(
+            depmap_snapshot_path, ranked_df["target_symbol"].tolist()
+        )
+        if depmap_snapshot_path is not None
+        else {}
+    )
+    if depmap_snapshot_path is not None:
+        _report_dependency_coverage(dependency_evidence)
 
     card_kwargs = {
         "output_dir": target_cards_dir,
@@ -213,6 +250,8 @@ def run_core_pipeline(
     }
     if evidence_cards:
         card_kwargs["evidence_cards"] = evidence_cards
+    if dependency_evidence:
+        card_kwargs["dependency_evidence_by_symbol"] = dependency_evidence
     card_paths = write_top_target_cards(ranked_df, **card_kwargs)
 
     print(
@@ -229,6 +268,9 @@ def run_core_pipeline(
     }
     if evidence_cards:
         html_kwargs["evidence_cards"] = evidence_cards
+    if dependency_evidence:
+        html_kwargs["dependency_evidence_by_symbol"] = dependency_evidence
+        html_kwargs["include_dependency_index"] = True
     html_paths = write_top_html_reports(ranked_df, **html_kwargs)
 
     print(
@@ -397,6 +439,7 @@ def run_pipeline(
     top_n_per_mode: int = 10,
     validate: bool = False,
     evidence_store_path: str | Path | None = None,
+    depmap_snapshot_path: str | Path | None = None,
     project_root: Path = PROJECT_ROOT,
 ) -> PipelineOutputs:
     """Run the complete workflow, optionally including validation."""
@@ -406,6 +449,7 @@ def run_pipeline(
         refresh=refresh,
         top_n_per_mode=top_n_per_mode,
         evidence_store_path=evidence_store_path,
+        depmap_snapshot_path=depmap_snapshot_path,
         project_root=project_root,
     )
 

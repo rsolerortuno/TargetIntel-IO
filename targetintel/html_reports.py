@@ -625,10 +625,11 @@ def write_target_html_report(
     return output_path
 
 
-def _make_target_link(symbol: str) -> str:
+def _make_target_link(symbol: str, target_report_href_prefix: str = "") -> str:
     """Create an HTML link to a target report."""
     safe_symbol = escape(symbol)
-    return f'<a href="{safe_symbol}.html">{safe_symbol}</a>'
+    safe_prefix = escape(target_report_href_prefix, quote=True)
+    return f'<a href="{safe_prefix}{safe_symbol}.html">{safe_symbol}</a>'
 
 
 def _make_mode_table(
@@ -636,6 +637,7 @@ def _make_mode_table(
     mode: str,
     label: str,
     top_n: int,
+    target_report_href_prefix: str = "",
 ) -> str:
     """
     Create an HTML table for one therapeutic-intent mode.
@@ -657,7 +659,7 @@ def _make_mode_table(
             f"""
             <tr>
                 <td>{_safe_int(row.get(rank_col))}</td>
-                <td>{_make_target_link(symbol)}</td>
+                <td>{_make_target_link(symbol, target_report_href_prefix)}</td>
                 <td>{escape(_safe_str(row.get("role_classification")))}</td>
                 <td>{escape(_safe_str(row.get("best_modality")))}</td>
                 <td>{_safe_float(row.get(score_col))}</td>
@@ -693,6 +695,8 @@ def _make_mode_table(
 def make_html_index(
     ranked_df: pd.DataFrame,
     top_n_per_mode: int = 10,
+    dependency_evidence_by_symbol: Mapping[str, DependencyReportEvidence] | None = None,
+    target_report_href_prefix: str = "",
 ) -> str:
     """
     Generate an HTML index page for the target reports.
@@ -702,6 +706,7 @@ def make_html_index(
         mode="antibody_io",
         label="Top antibody / IO-combination targets",
         top_n=top_n_per_mode,
+        target_report_href_prefix=target_report_href_prefix,
     )
 
     biomarker_table = _make_mode_table(
@@ -709,6 +714,7 @@ def make_html_index(
         mode="biomarker",
         label="Top resistance biomarker candidates",
         top_n=top_n_per_mode,
+        target_report_href_prefix=target_report_href_prefix,
     )
 
     small_molecule_table = _make_mode_table(
@@ -716,7 +722,38 @@ def make_html_index(
         mode="small_molecule",
         label="Top tumor-intrinsic / small-molecule candidates",
         top_n=top_n_per_mode,
+        target_report_href_prefix=target_report_href_prefix,
     )
+    dependency_section = ""
+    if dependency_evidence_by_symbol:
+        rows: list[str] = []
+        for symbol, evidence in sorted(dependency_evidence_by_symbol.items()):
+            row = ranked_df.loc[ranked_df["target_symbol"] == symbol]
+            baseline_score = (
+                "antibody / IO: " + _safe_float(row.iloc[0].get("antibody_io_final_score"))
+                + "; biomarker: " + _safe_float(row.iloc[0].get("biomarker_final_score"))
+                + "; small molecule: " + _safe_float(row.iloc[0].get("small_molecule_final_score"))
+                if not row.empty else "not in productive baseline"
+            )
+            role = _safe_str(row.iloc[0].get("role_classification")) if not row.empty else "research-preview discovery identity"
+            rows.append("<tr>" + "".join([
+                f"<td>{escape(symbol)}</td>", f"<td>{escape(role)}</td>",
+                f"<td>{baseline_score}</td>", f"<td>{'available' if evidence.profile_available else 'unavailable'}</td>",
+                f"<td>{escape(evidence.coverage_status)}</td>", f"<td>{_safe_int(evidence.context_model_count)}</td>",
+                f"<td>{_safe_int(evidence.reference_model_count)}</td>",
+                f"<td>{escape(str(evidence.gene_effect) if evidence.gene_effect else 'not available')}</td>",
+                f"<td>{escape(str(evidence.dependency_probability) if evidence.dependency_probability else 'not available')}</td>",
+                f"<td>{escape(str(evidence.selectivity) if evidence.selectivity else 'not available')}</td>",
+                f"<td>{_safe_int(evidence.baseline_rank)}</td>", f"<td>{_safe_int(evidence.dependency_aware_candidate_rank)}</td>",
+                f"<td>{_safe_int(evidence.rank_delta)}</td>", f"<td>{escape(_safe_str(evidence.integration_state))}</td>",
+                "<td>required</td>",
+            ]) + "</tr>")
+        dependency_section = """
+<section class=\"card functional-dependency\">
+  <h2>DepMap functional-dependency research preview</h2>
+  <p>Research-preview DepMap overlay rank is not the productive rank. Rank delta = dependency-aware candidate rank minus baseline rank. Negative deltas indicate movement toward a lower numerical rank, not biological validation.</p>
+  <p>DepMap cell-line dependency is not clinical anti-PD-1 response evidence; human review remains required.</p>
+  <table><thead><tr><th>Target</th><th>Role</th><th>Baseline score</th><th>Profile</th><th>Coverage</th><th>Context models</th><th>Reference models</th><th>Gene effect</th><th>Dependency probability</th><th>Selectivity</th><th>Baseline rank</th><th>Research-preview DepMap overlay rank</th><th>Rank delta</th><th>Integration</th><th>Human review</th></tr></thead><tbody>""" + "".join(rows) + "</tbody></table></section>"
 
     return f"""<!doctype html>
 <html lang="en">
@@ -756,6 +793,8 @@ def make_html_index(
 
 {small_molecule_table}
 
+{dependency_section}
+
 <footer class="footer">
     Generated by TargetIntel-IO.
 </footer>
@@ -770,6 +809,8 @@ def write_html_index(
     ranked_df: pd.DataFrame,
     output_dir: str | Path = DEFAULT_HTML_REPORT_DIR,
     top_n_per_mode: int = 10,
+    dependency_evidence_by_symbol: Mapping[str, DependencyReportEvidence] | None = None,
+    target_report_href_prefix: str = "",
 ) -> Path:
     """
     Write the HTML index page.
@@ -779,8 +820,23 @@ def write_html_index(
 
     output_path = output_dir / "index.html"
 
+    html = make_html_index(
+        ranked_df,
+        top_n_per_mode=top_n_per_mode,
+        dependency_evidence_by_symbol=dependency_evidence_by_symbol,
+        target_report_href_prefix=target_report_href_prefix,
+    )
+
+    normalized_html = (
+        "\n".join(
+            line.rstrip(" \t")
+            for line in html.splitlines()
+        ).rstrip("\n")
+        + "\n"
+    )
+
     output_path.write_text(
-        make_html_index(ranked_df, top_n_per_mode=top_n_per_mode),
+        normalized_html,
         encoding="utf-8",
     )
 
@@ -795,6 +851,7 @@ def write_top_html_reports(
     feasibility_annotations: Mapping[str, tuple[object, ...] | list[object]] | None = None,
     feasibility_target_identifier_type: str | None = None,
     dependency_evidence_by_symbol: Mapping[str, DependencyReportEvidence] | None = None,
+    include_dependency_index: bool = False,
 ) -> list[Path]:
     """
     Write HTML reports for the union of top-N targets across all modes.
@@ -851,6 +908,7 @@ def write_top_html_reports(
         ranked_df,
         output_dir=output_dir,
         top_n_per_mode=top_n_per_mode,
+        dependency_evidence_by_symbol=(dependency_evidence_by_symbol if include_dependency_index else None),
     )
 
     return [index_path] + written_paths

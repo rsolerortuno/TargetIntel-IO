@@ -1,0 +1,432 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>TargetIntel-IO report: BRD4</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+
+:root {
+    --bg: #f6f8fb;
+    --card: #ffffff;
+    --text: #1f2937;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --high: #14532d;
+    --high-bg: #dcfce7;
+    --medium: #854d0e;
+    --medium-bg: #fef3c7;
+    --low: #1e3a8a;
+    --low-bg: #dbeafe;
+    --none: #374151;
+    --none-bg: #e5e7eb;
+    --accent: #2563eb;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 32px;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    line-height: 1.55;
+}
+
+.container {
+    max-width: 1120px;
+    margin: 0 auto;
+}
+
+.header {
+    background: linear-gradient(135deg, #111827, #1e3a8a);
+    color: white;
+    padding: 32px;
+    border-radius: 18px;
+    margin-bottom: 24px;
+}
+
+.header h1 {
+    margin: 0 0 8px 0;
+    font-size: 34px;
+}
+
+.header p {
+    margin: 0;
+    color: #dbeafe;
+}
+
+.card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.metric {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+    background: #fbfdff;
+}
+
+.metric-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+    margin-bottom: 4px;
+}
+
+.metric-value {
+    font-size: 16px;
+    font-weight: 650;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12px;
+}
+
+th, td {
+    border-bottom: 1px solid var(--border);
+    padding: 10px;
+    text-align: left;
+    vertical-align: top;
+}
+
+th {
+    font-size: 13px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 650;
+}
+
+.badge-high {
+    color: var(--high);
+    background: var(--high-bg);
+}
+
+.badge-medium {
+    color: var(--medium);
+    background: var(--medium-bg);
+}
+
+.badge-low {
+    color: var(--low);
+    background: var(--low-bg);
+}
+
+.badge-none {
+    color: var(--none);
+    background: var(--none-bg);
+}
+
+.scorebar {
+    height: 8px;
+    width: 100%;
+    background: #e5e7eb;
+    border-radius: 999px;
+    overflow: hidden;
+    margin-top: 6px;
+}
+
+.scorebar-fill {
+    height: 100%;
+    background: var(--accent);
+}
+
+.note {
+    color: var(--muted);
+    font-size: 14px;
+}
+
+.footer {
+    margin-top: 32px;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+a {
+    color: var(--accent);
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 760px) {
+    body {
+        padding: 16px;
+    }
+
+    .grid {
+        grid-template-columns: 1fr;
+    }
+
+    .header h1 {
+        font-size: 26px;
+    }
+}
+
+</style>
+</head>
+<body>
+<div class="container">
+
+<header class="header">
+    <h1>Target hypothesis report: BRD4</h1>
+    <p>TargetIntel-IO therapeutic-intent-aware target triage summary</p>
+</header>
+
+<section class="card">
+    <h2>Target identity</h2>
+    <div class="grid">
+        <div class="metric">
+            <div class="metric-label">Target symbol</div>
+            <div class="metric-value">BRD4</div>
+        </div>
+        <div class="metric">
+            <div class="metric-label">Target name</div>
+            <div class="metric-value">bromodomain containing 4</div>
+        </div>
+        <div class="metric">
+            <div class="metric-label">Open Targets melanoma score</div>
+            <div class="metric-value">0.538</div>
+            <div class="scorebar"><div class="scorebar-fill" style="width: 54%"></div></div>
+        </div>
+        <div class="metric">
+            <div class="metric-label">Open Targets baseline rank</div>
+            <div class="metric-value">181</div>
+        </div>
+    </div>
+</section>
+
+
+
+<section class="card functional-dependency">
+<h2>Functional dependency — DepMap Public 26Q1</h2>
+<h3>Coverage</h3>
+<pre class="note">
+- **Profile available:** yes
+- **Coverage status:** sufficient_complete_coverage
+- **Total model count:** 2154
+- **Context model count:** 56
+- **Reference model count:** 2098
+- **Available context observations:** 56
+- **Available reference observations:** 1152
+- **Coverage fraction:** 1.0
+- **Missing-value state:** target_resolved_both_matrices
+- **Unavailable reason:** not reported
+</pre>
+<h3>Dependency profile</h3>
+<pre class="note">
+- **Gene-effect summary:** {&quot;available&quot;:true,&quot;first_quartile&quot;:-1.248457530692548,&quot;interquartile_range&quot;:0.31380168154055843,&quot;maximum&quot;:-0.23565820283589978,&quot;mean&quot;:-1.077419296229426,&quot;measured_model_count&quot;:56,&quot;median&quot;:-1.107477935554086,&quot;minimum&quot;:-1.7448082336119686,&quot;missing_fraction&quot;:0.0,&quot;missing_model_count&quot;:0,&quot;third_quartile&quot;:-0.9346558491519896,&quot;threshold_fractions&quot;:[],&quot;total_model_count&quot;:56}
+- **Dependency-probability summary:** {&quot;available&quot;:true,&quot;first_quartile&quot;:0.955950792547962,&quot;interquartile_range&quot;:0.03830238730638025,&quot;maximum&quot;:0.9999959988125812,&quot;mean&quot;:0.9347159273213392,&quot;measured_model_count&quot;:56,&quot;median&quot;:0.9859241206511045,&quot;minimum&quot;:0.16171450657858166,&quot;missing_fraction&quot;:0.0,&quot;missing_model_count&quot;:0,&quot;third_quartile&quot;:0.9942531798543423,&quot;threshold_fractions&quot;:[{&quot;denominator&quot;:56,&quot;fraction&quot;:0.9642857142857143,&quot;numerator&quot;:54,&quot;threshold&quot;:0.5},{&quot;denominator&quot;:56,&quot;fraction&quot;:0.9107142857142857,&quot;numerator&quot;:51,&quot;threshold&quot;:0.8}],&quot;total_model_count&quot;:56}
+- **Context-versus-reference comparison:** {&quot;context_minus_pan_cancer&quot;:{&quot;dependency_probability_median&quot;:0.012852118011719371,&quot;dependency_probability_threshold_fractions&quot;:[{&quot;context_fraction&quot;:0.9642857142857143,&quot;difference&quot;:0.012298959318826852,&quot;pan_cancer_fraction&quot;:0.9519867549668874,&quot;threshold&quot;:0.5},{&quot;context_fraction&quot;:0.9107142857142857,&quot;difference&quot;:0.05640964995269626,&quot;pan_cancer_fraction&quot;:0.8543046357615894,&quot;threshold&quot;:0.8}],&quot;gene_effect_mean&quot;:-0.06262569475045776,&quot;gene_effect_median&quot;:-0.0852599501660074},&quot;dependency_probability_context_minus_non_context_median&quot;:0.013431985355028209,&quot;dependency_probability_context_minus_non_context_threshold_fractions&quot;:[{&quot;context_fraction&quot;:0.9642857142857143,&quot;difference&quot;:0.012896825396825462,&quot;non_context_fraction&quot;:0.9513888888888888,&quot;threshold&quot;:0.5},{&quot;context_fraction&quot;:0.9107142857142857,&quot;difference&quot;:0.0591517857142857,&quot;non_context_fraction&quot;:0.8515625,&quot;threshold&quot;:0.8}],&quot;direction&quot;:&quot;Negative gene-effect context-minus-reference values indicate stronger model dependency signal in the context group.&quot;,&quot;gene_effect_context_minus_non_context_mean&quot;:-0.0656699993563834,&quot;gene_effect_context_minus_non_context_median&quot;:-0.08666583394816563}
+- **Selectivity:** {&quot;available&quot;:true,&quot;direction&quot;:&quot;100 means a stronger (more negative median gene-effect) context signal than most eligible lineages.&quot;,&quot;eligible_lineage_count&quot;:28,&quot;value&quot;:77.77777777777777}
+- **Dependency interpretation state:** valid
+</pre>
+<h3>Integration</h3>
+<pre class="note">
+- **Baseline rank:** 183
+- **Dependency-aware candidate rank:** 183
+- **Rank delta:** 0
+- **Rank-delta convention:** dependency-aware candidate rank minus baseline rank.
+- **Negative rank delta:** movement toward a lower numerical rank.
+- **Integration state:** blocked_insufficient_evidence
+- **Baseline preserved:** yes
+- **Production activation enabled:** disabled
+- **Approved authorization emitted:** not emitted
+- **Candidate activation readiness:** blocked
+- **Human review required:** required
+</pre>
+<h3>Release provenance</h3>
+<pre class="note">
+- **Evidence ID:** `drep_adc5929d4b75660699e849fe64220e0ada6c45e9c7fb0367b31d5dab4d09fd09`
+- **Release identifier:** `DepMap_Public_26Q1`
+- **Release manifest ID:** `dmrm_08d15741ac2297df953346ff257dec05feb0b754a62ae6a9f56573e11801c5b1`
+- **Configuration ID:** `v050rc_fe68644624acd4b72aaf289baa9380c07f30d26c3271923ba81540f9b91e37b6`
+- **Scientific closure identity:** `v050closure_e57fa135ff266078d2170bf2a34df094f7888e7ce6002783c75f6a583690a3a4`
+- **Context identity:** `melanoma_anti_pd1:v1`
+- **Canonical gene identity:** `symbol:BRD4|entrez:23476`
+- **Contract format version:** `v1`
+- **Portable source artifacts:** `candidate_overlay.tsv`, `selected_target_profiles.tsv`
+</pre>
+<h3>Limitations</h3>
+<pre class="note">
+- Acral and drug-adapted models are excluded from the primary profile and retained separately.
+- Baseline: unchanged 300-target TargetIntel antibody-IO ranking.
+- Benchmark canonical identities were reconciled against the DepMap Public 26Q1 gene index without changing benchmark membership.
+- DepMap Public 26Q1 cell-line dependency evidence.
+- Dependency is treated as explanatory evidence, not as clinical validation.
+- Descriptive real-release aggregate evidence only; no therapeutic, clinical, safety, or causal conclusion.
+- Multi-axis annotations are represented as pipe-separated controlled resistance-axis values.
+- No automatic target activation or release.
+- No clinical anti-PD-1 response inference.
+- Primary context contains 56 reviewed cutaneous melanoma cell-line models.
+- Primary context: 56 reviewed cutaneous melanoma models.
+- Thresholds were fixed before inspecting benchmark outcomes.
+- Unmapped resistance-axis annotations are represented by the controlled value other_unresolved.
+- DepMap cell-line dependency is not clinical anti-PD-1 response evidence.
+- Absence of tumor-cell dependency does not invalidate an immune target.
+- Broad dependency may reflect general essentiality.
+- Cell lines do not reproduce the complete tumor microenvironment.
+- Candidate activation requires explicit human review.</pre>
+</section>
+
+
+<section class="card">
+    <h2>Stable TargetIntel-IO classification</h2>
+    <div class="grid">
+        <div class="metric">
+            <div class="metric-label">Role classification</div>
+            <div class="metric-value">unclear / low-confidence candidate</div>
+        </div>
+        <div class="metric">
+            <div class="metric-label">Role confidence</div>
+            <div class="metric-value">low</div>
+        </div>
+        <div class="metric">
+            <div class="metric-label">Therapeutic direction</div>
+            <div class="metric-value">unclear</div>
+        </div>
+        <div class="metric">
+            <div class="metric-label">Best modality</div>
+            <div class="metric-value">unclear</div>
+        </div>
+        <div class="metric">
+            <div class="metric-label">Resistance axis</div>
+            <div class="metric-value">unmapped</div>
+        </div>
+        <div class="metric">
+            <div class="metric-label">Matched resistance programs</div>
+            <div class="metric-value">not available</div>
+        </div>
+    </div>
+</section>
+
+<section class="card">
+    <h2>Therapeutic-intent rankings</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Therapeutic intent</th>
+                <th>Score</th>
+                <th>Rank</th>
+                <th>Priority</th>
+                <th>Rank shift vs Open Targets</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Antibody / IO-combination</td>
+                <td>0.000<div class="scorebar"><div class="scorebar-fill" style="width: 0%"></div></div></td>
+                <td>183</td>
+                <td><span class="badge badge-none">not prioritized</span></td>
+                <td>-2</td>
+            </tr>
+            <tr>
+                <td>Resistance biomarker</td>
+                <td>0.000<div class="scorebar"><div class="scorebar-fill" style="width: 0%"></div></div></td>
+                <td>184</td>
+                <td><span class="badge badge-none">not prioritized</span></td>
+                <td>-3</td>
+            </tr>
+            <tr>
+                <td>Tumor-intrinsic / small molecule</td>
+                <td>0.000<div class="scorebar"><div class="scorebar-fill" style="width: 0%"></div></div></td>
+                <td>183</td>
+                <td><span class="badge badge-none">not prioritized</span></td>
+                <td>-2</td>
+            </tr>
+        </tbody>
+    </table>
+</section>
+
+<section class="card">
+    <h2>Evidence for</h2>
+    <ul>
+        <li>Moderate Open Targets melanoma association score (0.538)</li>
+    </ul>
+</section>
+
+<section class="card">
+    <h2>Evidence against / limitations</h2>
+    <ul>
+        <li>Not currently mapped to a curated anti-PD-1 resistance axis</li>
+<li>Stable role classifier confidence is low</li>
+    </ul>
+</section>
+
+<section class="card">
+    <h2>Confidence and uncertainty</h2>
+    <div class="grid">
+        <div class="metric">
+            <div class="metric-label">Confidence level</div>
+            <div class="metric-value">low confidence</div>
+        </div>
+        <div class="metric">
+            <div class="metric-label">Data completeness score</div>
+            <div class="metric-value">0.667</div>
+            <div class="scorebar"><div class="scorebar-fill" style="width: 67%"></div></div>
+        </div>
+        <div class="metric">
+            <div class="metric-label">Contradiction score</div>
+            <div class="metric-value">0.360</div>
+            <div class="scorebar"><div class="scorebar-fill" style="width: 36%"></div></div>
+        </div>
+        <div class="metric">
+            <div class="metric-label">Main limitation</div>
+            <div class="metric-value">No curated anti-PD-1 resistance-axis mapping</div>
+        </div>
+    </div>
+    <p><strong>Uncertainty reason:</strong> Missing evidence fields: resistance_axis, therapeutic_direction, best_modality | No curated anti-PD-1 resistance-axis mapping | Low role-classifier confidence | Therapeutic modality fit is unclear | Main limitation: No curated anti-PD-1 resistance-axis mapping</p>
+    <p><strong>Deprioritization reason:</strong> BRD4 lacks current curated anti-PD-1 resistance-axis support in TargetIntel-IO.</p>
+</section>
+
+<section class="card">
+    <h2>Recommended next validation experiment</h2>
+    <p><strong>Validation category:</strong> evidence-gathering</p>
+    <p><strong>Next experiment:</strong> Perform literature review and cohort-level expression analysis for BRD4 in anti-PD-1-resistant melanoma.</p>
+    <p><strong>Rationale:</strong> The current evidence is insufficient for a confident therapeutic interpretation.</p>
+</section>
+
+<section class="card">
+    <h2>Interpretation note</h2>
+    <p class="note">
+        This report is generated by TargetIntel-IO as a transparent, rule-based
+        target triage summary. It is intended for hypothesis generation and
+        portfolio demonstration only. It does not represent clinical advice or
+        validated therapeutic evidence.
+    </p>
+</section>
+
+<footer class="footer">
+    Generated by TargetIntel-IO.
+</footer>
+
+</div>
+</body>
+</html>
